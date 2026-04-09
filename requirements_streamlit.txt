@@ -1,0 +1,12 @@
+streamlit
+streamlit-webrtc
+opencv-python-headless
+numpy
+pandas
+neurokit2
+joblib
+mediapipe
+scipy
+python-dotenv
+openai
+plotly
