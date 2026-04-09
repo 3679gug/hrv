@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: #F8FAFC;
+  --color-foreground: #0F172A;
+  --color-primary: #1E40AF;
+  --color-secondary: #DBEAFE;
+  --color-accent: #EFF6FF;
+}
+
+:root {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --primary: #1E40AF;
+  --secondary: #DBEAFE;
+  --accent: #EFF6FF;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+}
+
+.card {
+  @apply bg-white rounded-3xl p-6 shadow-sm border border-gray-100;
+}
+
+.btn-primary {
+  @apply bg-primary text-white rounded-full py-4 px-8 font-semibold flex items-center justify-center gap-2 transform transition-all active:scale-95 text-lg;
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.btn-secondary {
+  @apply bg-white text-primary border border-gray-100 rounded-full py-3 px-6 font-medium bg-white;
+}
+
+/* Animations from the design */
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+}
