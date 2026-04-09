@@ -9,4 +9,4 @@ scipy
 python-dotenv
 openai
 plotly
-
+opencv-python-headless
