@@ -10,3 +10,4 @@ scipy
 python-dotenv
 openai
 plotly
+cv2
