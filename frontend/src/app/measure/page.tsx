@@ -42,6 +42,7 @@ export default function MeasurePage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Constants
+  // Force rebuild for environment variable sync: 2026-04-10
   const TARGET_FRAMES = 900; // 30 seconds at 30fps
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
   const API_URL = `${BACKEND_URL}/analyze`;
