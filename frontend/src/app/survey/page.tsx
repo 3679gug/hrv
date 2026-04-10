@@ -32,6 +32,15 @@ export default function SurveyPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [selectedVoice, setSelectedVoice] = useState('nova');
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+  };
 
   useEffect(() => {
     // Load voice preference
@@ -41,6 +50,8 @@ export default function SurveyPage() {
     // Load boolean preference for auto-voice
     const useVoice = localStorage.getItem('use_voice');
     if (useVoice === 'true') setIsVoiceEnabled(true);
+
+    return () => stopAudio(); // Cleanup on unmount
   }, []);
 
   // New: Cache for pre-fetched audio Blob URLs (Key: `${index}_${voice}`)
@@ -118,37 +129,23 @@ export default function SurveyPage() {
 
   const speakQuestion = async (text: string) => {
     try {
-      // Step 1: Check if audio is already in cache (Voice-aware)
+      stopAudio(); // Stop any current audio before playing new one
+
+      // Step 1: Check if audio is already in cache
       const cacheKey = `${currentIdx}_${selectedVoice}`;
       let audioUrl = audioCache[cacheKey];
 
-      // Step 1.5: If not in cache but a fetch is in progress, WAIT for it (0.1s ~ 0.5s)
       if (!audioUrl && fetchPromises[cacheKey] !== undefined) {
-        console.log(`[TTS] Waiting for pending fetch for question ${currentIdx + 1}...`);
         audioUrl = (await fetchPromises[cacheKey]) || '';
       }
 
-      if (audioUrl) {
-        console.log(`[TTS] Fast play: ${selectedVoice}`);
-        const audio = new Audio(audioUrl);
-        await audio.play();
-        return;
-      }
-
-      // Step 2: Fallback with cache busting (only if everything else fails)
-      console.log(`[TTS] Emergency fallback stream for ${currentIdx}`);
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
-      const fallbackUrl = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}&t=${Date.now()}`;
-      const audio = new Audio(fallbackUrl);
+      const finalUrl = audioUrl || `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001"}/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}&t=${Date.now()}`;
+      
+      const audio = new Audio(finalUrl);
+      audioRef.current = audio;
       await audio.play();
     } catch (error) {
-      console.warn("[TTS] Premium failed, fallback browser", error);
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'ko-KR';
-        utter.rate = 0.85;
-        window.speechSynthesis.speak(utter);
-      }
+      console.warn("[TTS] Error", error);
     }
   };
 
@@ -205,8 +202,12 @@ export default function SurveyPage() {
           <h1 className="text-sm font-black text-gray-900">마음 건강 설문</h1>
         </div>
         <button 
-           onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
-           className={`p-3 rounded-2xl transition-colors ${isVoiceEnabled ? 'bg-primary/10 text-primary' : 'bg-gray-50 text-gray-400'}`}
+           onClick={() => {
+             const newState = !isVoiceEnabled;
+             setIsVoiceEnabled(newState);
+             if (!newState) stopAudio();
+           }}
+           className={`p-3 rounded-2xl transition-all duration-300 shadow-sm ${isVoiceEnabled ? 'bg-accent text-primary scale-110 shadow-accent/40' : 'bg-gray-50 text-gray-300'}`}
         >
           {isVoiceEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
         </button>
@@ -240,14 +241,7 @@ export default function SurveyPage() {
             exit={{ opacity: 0, y: -10 }}
             className="card p-8 min-h-[220px] flex flex-col items-center justify-center text-center mb-8 relative border-none shadow-none bg-primary/5 rounded-[40px]"
           >
-            <button
-              onClick={() => speakQuestion(PHQ9_QUESTIONS[currentIdx])}
-              className="absolute top-4 right-4 px-3 py-2 rounded-2xl bg-white shadow-lg flex items-center gap-2 text-primary active:scale-95 hover:bg-gray-50 transition-all border border-gray-100 group"
-            >
-              <Mic className="group-hover:animate-bounce" size={16} />
-              <span className="text-[10px] font-black uppercase tracking-tighter">질문 듣기</span>
-            </button>
-            <h3 className="text-2xl font-black leading-[1.6] text-gray-800 break-keep">
+            <h3 className="text-2xl font-black leading-[1.6] text-gray-800 break-keep px-4">
               {PHQ9_QUESTIONS[currentIdx]}
             </h3>
           </motion.div>
