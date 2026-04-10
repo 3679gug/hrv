@@ -38,22 +38,16 @@ export default function ResultsPage() {
     }
   }, []);
 
-  // Smart Smoothing Logic (Prioritize PHQ-9 but lean healthier if gap is too big)
+  // User-Centric Calibration: Prioritize PHQ-9 Survey results
   const getCalibratedScore = () => {
     const hrvPhq = data?.phq9 || 0;
     
-    // 만약 설문을 건너뛰었다면 HRV 분석 점수를 그대로 사용합니다.
+    // 만약 설문을 건너뛰었다면 생체 신호(HRV) 분석 점수를 사용합니다.
     if (isSkipped) return hrvPhq; 
 
-    const userPhq = phq9;
-    
-    // If difference is large (>10), take the healthier (lower) score
-    if (Math.abs(userPhq - hrvPhq) > 10) {
-      return Math.min(userPhq, hrvPhq);
-    }
-    
-    // Otherwise, bias towards user response (PHQ-9) as requested
-    return userPhq;
+    // 설문을 완료했다면 사용자 답변(PHQ-9)을 최우선으로 신뢰합니다.
+    // 이는 "설문 점수가 낮으면 HRV가 위험하더라도 건강함으로 보정"한다는 요청에 따릅니다.
+    return phq9;
   };
 
   const finalScore = getCalibratedScore();
@@ -63,7 +57,7 @@ export default function ResultsPage() {
       status: "심박 변이도 분석 정밀 진단",
       msg: "오늘은 설문 없이 생체 신호 기반 분석을 진행했습니다.",
       desc: "설문 주기는 4주이며, 현재는 심장의 생체 활성도를 위주로 분석합니다.",
-      guide: "규칙적인 운동과 충분한 수면은 심장 회복력을 높이는 데 큰 도움이 됩니다.",
+      guide: "규칙적인 운동과 충분한 수면은 심박변이도 수치를 높이고 심장 건강을 개선하는 데 큰 도움이 됩니다.",
       color: "text-blue-500", bg: "bg-blue-50"
     };
 
@@ -116,12 +110,12 @@ export default function ResultsPage() {
     ];
     const range = standards.find(s => age <= s.maxAge) || standards[standards.length - 1];
     if (hrv_ms < range.min) return { label: "주의 및 휴식", color: "text-amber-500", bg: "bg-amber-50" };
-    if (hrv_ms <= range.max) return { label: "안정적 리듬", color: "text-green-600", bg: "bg-green-50" };
+    if (hrv_ms <= range.max) return { label: "안정적 심박 상태", color: "text-green-600", bg: "bg-green-50" };
     return { label: "매우 우수", color: "text-blue-600", bg: "bg-blue-50" };
   };
 
   const getElderlySummary = (hrv: number, bpm: number, score: number) => {
-    if (isSkipped) return "심박 변이도는 심장의 회복 능력을 나타냅니다. 사용자님의 현재 수치를 바탕으로 분석한 건강 조언입니다.";
+    if (isSkipped) return "심박변이도는 심장이 얼마나 건강하게 활동하는지를 나타냅니다. 사용자님의 현재 수치를 바탕으로 분석한 건강 조언입니다.";
     if (score >= 20) return "마음이 많이 아프고 힘든 상태입니다. 전문가의 도움이 꼭 필요합니다.";
     if (score >= 10) return "마음이 많이 지치고 우울감이 머물러 있네요. 보살핌이 필요한 시간입니다.";
     return "현재 마음이 비교적 편안한 상태입니다. 기분을 잘 유지해 보세요.";

@@ -216,7 +216,7 @@ export default function ReportsPage() {
            {viewType !== 'compare' && (
              <div className="flex justify-between items-center px-1">
                 <h2 className="text-xl font-black text-gray-900 tracking-tight">
-                  {showPhq9 ? "마음과 몸의 변화 모습" : "몸의 활력 변화"}
+                  {showPhq9 ? "마음과 심박변이도의 변화" : "심박변이도 변화"}
                 </h2>
                 <div className="flex gap-4">
                    {showPhq9 && (
@@ -227,7 +227,7 @@ export default function ReportsPage() {
                    )}
                    <div className="flex items-center gap-1.5">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors.hrv }} />
-                      <span className="text-[10px] font-bold text-gray-400 tracking-tighter uppercase">신체</span>
+                      <span className="text-[10px] font-bold text-gray-400 tracking-tighter uppercase">심박변이도</span>
                    </div>
                 </div>
              </div>
@@ -304,7 +304,7 @@ export default function ReportsPage() {
                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6">
                     <TrendingUp size={32} className="text-emerald-500" />
                  </div>
-                 <p className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-3">평균 신체 회복력</p>
+                 <p className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-3">평균 심박변이도</p>
                  <div className="flex items-baseline gap-2 mb-6">
                     <span className="text-6xl font-black text-gray-900 tracking-tighter">
                        {(() => {
@@ -318,9 +318,9 @@ export default function ReportsPage() {
                     <p className="text-[17px] text-emerald-600 font-bold leading-relaxed">
                        {(() => {
                          const hrv = viewType === 'compare' ? Math.round(actualData?.hrv_ms || 42) : Math.round(chartData.reduce((acc, d) => acc + d.hrv, 0) / (chartData.length || 1));
-                         if (hrv < 25) return "오늘은 몸이 조금 지치신 것 같아요. 무리하지 마시고 푹 쉬는 것이 좋습니다.";
-                         if (hrv <= 50) return "몸의 활력이 보통 수준입니다. 가벼운 스트레칭으로 기운을 북돋아 보세요.";
-                         return "신체 회복력이 아주 훌륭합니다! 오늘 하루 아주 활기차게 보내실 수 있겠어요.";
+                         if (hrv < 25) return "심박변이도가 낮습니다. 충분한 휴식을 통해 신체 에너지를 회복해 보세요.";
+                         if (hrv <= 50) return "심박변이도가 보통 수준입니다. 가벼운 활동이 활력을 높이는 데 큰 도움이 됩니다.";
+                         return "심박변이도가 아주 훌륭합니다! 오늘 하루 아주 활기차게 보내실 수 있겠어요.";
                        })()}
                     </p>
                  </div>

@@ -168,10 +168,9 @@ class Pipeline:
             # Secondary: Risk probability for calibration
             risk_prob = self.clf.predict_proba(X_scaled)[0][1] * 100
             
-            # [Optimization] Minority class detection boost
-            # If regression score is near threshold, use risk probability to 'push' if severe
-            if score >= 15 or risk_prob > 70:
-                score = max(score, 18.0) # Boost suspect severe cases as per SOTA goal
+            # [Optimization] Smart Multi-class Calibration
+            # We now prioritize the user's survey results, so we remove the mandatory severe boost
+            # that was previously used for minority class detection.
             
             print(f"[Pipeline] SOTA process finished: {time.time() - t_start:.3f}s | Score: {score:.1f}")
             

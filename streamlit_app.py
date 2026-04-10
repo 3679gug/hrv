@@ -224,7 +224,7 @@ elif menu == "마음 검사 시작":
 
 # 3. REPORTS
 elif menu == "건강 분석 추이":
-    st.markdown("<h1 class='premium-title'>건강 분석 추이</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='premium-title'>심박변이도 분석 추이</h1>", unsafe_allow_html=True)
     
     if not st.session_state.history:
         st.warning("아직 측정 기록이 없습니다. 먼저 측정을 진행해 주세요.")
@@ -233,8 +233,8 @@ elif menu == "건강 분석 추이":
         
         # Charts
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df['date'], y=df['hrv_ms'], mode='lines+markers', name='신체 회복력', line=dict(color='#2dd4bf', width=4)))
-        fig.update_layout(title="몸의 활력 변화", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        fig.add_trace(go.Scatter(x=df['date'], y=df['hrv_ms'], mode='lines+markers', name='심박변이도', line=dict(color='#2dd4bf', width=4)))
+        fig.update_layout(title="심박변이도 변화", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
         st.plotly_chart(fig, use_container_width=True)
         
         # Large Score Display
@@ -249,9 +249,9 @@ elif menu == "건강 분석 추이":
         
         st.markdown(f"""
         <div class='premium-card' style='text-align: center;'>
-            <p class='result-label'>평균 회복력 (HRV)</p>
+            <p class='result-label'>평균 심박변이도 (HRV)</p>
             <p class='result-value'>{latest['hrv_ms']} <span style='font-size: 2rem; color: #cbd5e1;'>ms</span></p>
-            <p style='color: #0ea5e9; font-weight: bold;'>신체 리듬이 고르게 회복되고 있습니다 🌿</p>
+            <p style='color: #0ea5e9; font-weight: bold;'>심장 리듬이 고르고 안정적입니다 🌿</p>
         </div>
         """, unsafe_allow_html=True)
 
