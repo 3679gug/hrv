@@ -19,7 +19,7 @@ export default function Home() {
     <main className="min-h-screen bg-background text-foreground pb-12 max-w-md mx-auto relative overflow-hidden">
       {/* Header */}
       <header className="p-6 flex justify-between items-center bg-background sticky top-0 z-10 bg-opacity-80 backdrop-blur-md">
-        <button className="p-2 rounded-full bg-accent text-primary">
+        <button className="p-2 rounded-full text-primary hover:bg-gray-100 transition-colors">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-semibold text-primary">심리 검사 선택</h1>
@@ -42,11 +42,10 @@ export default function Home() {
             <div className="relative z-10 pt-8">
               <div className="space-y-6">
                 <h3 className="text-5xl font-black text-white leading-[1.15] tracking-tight">
-                  마음 건강 <br /> 
-                  검사 시작하기
+                  마음 이음
                 </h3>
                 <p className="text-white/80 font-medium text-2xl leading-relaxed max-w-[280px]">
-                  나도 몰랐던 내 마음의 소리, <br />
+                  나의 마음을 이어 주는 고마운 기술, <br />
                   과학적 분석으로 확인해보세요.
                 </p>
               </div>
@@ -57,7 +56,6 @@ export default function Home() {
                  <span>지금 시작</span>
                  <ArrowRight size={28} className="group-hover:translate-x-3 transition-transform" />
               </div>
-              <div className="text-white/30 text-[10px] font-bold tracking-[0.2em] uppercase">SYSTEM V2.0</div>
             </div>
           </button>
         </motion.div>

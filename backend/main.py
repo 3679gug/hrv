@@ -9,6 +9,12 @@ import io
 from dotenv import load_dotenv
 from openai import OpenAI
 
+import numpy as np
+
+# Patch for NeuroKit2 compatibility with older numpy versions
+if not hasattr(np, 'trapezoid'):
+    np.trapezoid = np.trapz
+
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 print(f"DEBUG: OpenAI API Key loaded: {api_key[:8]}...{api_key[-4:] if api_key else 'None'}")
