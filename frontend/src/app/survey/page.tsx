@@ -61,7 +61,8 @@ export default function SurveyPage() {
     const promise = (async () => {
       try {
         const text = PHQ9_QUESTIONS[index];
-        const url = `http://127.0.0.1:8001/tts?text=${encodeURIComponent(text)}&voice=${voice}&t=${Date.now()}`;
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
+        const url = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${voice}&t=${Date.now()}`;
         const response = await fetch(url);
         if (response.ok) {
           const blob = await response.blob();
@@ -136,7 +137,8 @@ export default function SurveyPage() {
 
       // Step 2: Fallback with cache busting (only if everything else fails)
       console.log(`[TTS] Emergency fallback stream for ${currentIdx}`);
-      const fallbackUrl = `http://127.0.0.1:8001/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}&t=${Date.now()}`;
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
+      const fallbackUrl = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}&t=${Date.now()}`;
       const audio = new Audio(fallbackUrl);
       await audio.play();
     } catch (error) {

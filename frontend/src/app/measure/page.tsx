@@ -43,7 +43,8 @@ export default function MeasurePage() {
 
   // Constants
   const TARGET_FRAMES = 900; // 30 seconds at 30fps
-  const API_URL = "http://127.0.0.1:8001/analyze";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
+  const API_URL = `${BACKEND_URL}/analyze`;
   const ROI_FOREHEAD = [10, 338, 297, 332, 284, 251, 67, 109];
   const ROI_CHEEKS = [118, 119, 100, 120, 121, 116, 117, 347, 348, 329, 349, 350, 345, 346];
 
