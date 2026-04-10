@@ -54,109 +54,69 @@ export default function SurveyPage() {
     return () => stopAudio(); // Cleanup on unmount
   }, []);
 
-  // New: Cache for pre-fetched audio Blob URLs (Key: `${index}_${voice}`)
-  const [audioCache, setAudioCache] = useState<Record<string, string>>({});
+  // Optimized: Cache for pre-instantiated Audio objects
+  const audioCacheRef = useRef<Record<string, HTMLAudioElement>>({});
   const [isPreloading, setIsPreloading] = useState(false);
-  // Track active fetch promises to avoid race conditions
-  const [fetchPromises, setFetchPromises] = useState<Record<string, Promise<string | null>>>({});
 
-  // Helper to fetch and cache a single audio
-  const fetchAudio = async (index: number, voice: string) => {
+  // Helper to fetch and cache a single audio object
+  const preloadAudio = async (index: number, voice: string) => {
     const cacheKey = `${index}_${voice}`;
-    
-    // If already in cache, return it
-    if (audioCache[cacheKey]) return audioCache[cacheKey];
-    // If already fetching, return the existing promise
-    if (fetchPromises[cacheKey] !== undefined) return fetchPromises[cacheKey];
+    if (audioCacheRef.current[cacheKey]) return;
 
-    const promise = (async () => {
-      try {
-        const text = PHQ9_QUESTIONS[index];
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
-        const url = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${voice}&t=${Date.now()}`;
-        const response = await fetch(url);
-        if (response.ok) {
-          const blob = await response.blob();
-          const objectUrl = URL.createObjectURL(blob);
-          setAudioCache(prev => ({ ...prev, [cacheKey]: objectUrl }));
-          return objectUrl;
-        }
-      } catch (e) {
-        console.error(`[TTS] Fetch error for ${cacheKey}:`, e);
-        return null;
-      } finally {
-        // Clear promise from tracker when done
-        setFetchPromises(prev => {
-          const next = { ...prev };
-          delete next[cacheKey];
-          return next;
-        });
-      }
-      return null;
-    })();
-
-    setFetchPromises(prev => ({ ...prev, [cacheKey]: promise }));
-    return promise;
+    try {
+      const text = PHQ9_QUESTIONS[index];
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
+      const url = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${voice}&t=${Date.now()}`;
+      
+      const audio = new Audio(url);
+      audio.load(); // Start loading in background
+      audioCacheRef.current[cacheKey] = audio;
+    } catch (e) {
+      console.error(`[TTS] Preload error for ${cacheKey}:`, e);
+    }
   };
 
   // Pre-load all question voices into memory
   useEffect(() => {
-    const preLoadVoices = async () => {
+    const preLoadAll = async () => {
       setIsPreloading(true);
-      console.log(`[TTS] Optimizing for [${selectedVoice}] voice...`);
-
-      try {
-        // 1. High Priority: Fetch the CURRENT question first
-        await fetchAudio(currentIdx, selectedVoice);
-        console.log(`[TTS] Priority question ${currentIdx + 1} ready.`);
-
-        // 2. Background: Fetch the remaining questions
-        PHQ9_QUESTIONS.forEach((_, index) => {
-          const cacheKey = `${index}_${selectedVoice}`;
-          if (index !== currentIdx && !audioCache[cacheKey]) {
-            fetchAudio(index, selectedVoice);
-          }
-        });
-      } catch (error) {
-        console.error("[TTS] System error:", error);
-      } finally {
-        setIsPreloading(false);
-      }
+      // 1. High Priority: Current
+      await preloadAudio(currentIdx, selectedVoice);
+      // 2. Background: Others
+      PHQ9_QUESTIONS.forEach((_, index) => {
+        if (index !== currentIdx) preloadAudio(index, selectedVoice);
+      });
+      setIsPreloading(false);
     };
-
-    preLoadVoices();
-  }, [selectedVoice, currentIdx]);
+    preLoadAll();
+  }, [selectedVoice]);
 
   const speakQuestion = async (text: string) => {
     try {
-      stopAudio(); // Stop any current audio before playing new one
+      stopAudio(); // Reset current
 
-      // Step 1: Check if audio is already in cache
       const cacheKey = `${currentIdx}_${selectedVoice}`;
-      let audioUrl = audioCache[cacheKey];
+      let audio = audioCacheRef.current[cacheKey];
 
-      if (!audioUrl && fetchPromises[cacheKey] !== undefined) {
-        audioUrl = (await fetchPromises[cacheKey]) || '';
+      if (!audio) {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
+        const url = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}`;
+        audio = new Audio(url);
+        audioCacheRef.current[cacheKey] = audio;
       }
 
-      const finalUrl = audioUrl || `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001"}/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}&t=${Date.now()}`;
-      
-      const audio = new Audio(finalUrl);
       audioRef.current = audio;
       await audio.play();
     } catch (error) {
-      console.warn("[TTS] Error", error);
+      console.warn("[TTS] Fast play failed", error);
     }
   };
 
   // Add Auto-play effect
   useEffect(() => {
     if (isVoiceEnabled && !isPreloading) {
-       // A small delay helps if transitioning
-       const timeout = setTimeout(() => {
-         speakQuestion(PHQ9_QUESTIONS[currentIdx]);
-       }, 300);
-       return () => clearTimeout(timeout);
+       // Zero delay for preloaded audio
+       speakQuestion(PHQ9_QUESTIONS[currentIdx]);
     }
   }, [currentIdx, isVoiceEnabled, isPreloading]);
 

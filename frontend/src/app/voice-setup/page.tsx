@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Volume2, VolumeX, UserRound, User, Sparkles, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,18 +11,47 @@ export default function VoiceSetupPage() {
   const [useVoice, setUseVoice] = useState<boolean | null>(null);
   const [voice, setVoice] = useState<string>('nova');
 
+  // Audio Pre-loading for zero-lag
+  const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
+  const PREVIEW_TEXT = "안녕하세요. 당신의 마음 건강 가이드입니다.";
+
+  useEffect(() => {
+    // Pre-create audio objects when step 2 is reached
+    if (step === 2) {
+      ['nova', 'onyx'].forEach(v => {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
+        const url = `${backendUrl}/tts?text=${encodeURIComponent(PREVIEW_TEXT)}&voice=${v}`;
+        const audio = new Audio(url);
+        audio.load(); // Force preload
+        audioRefs.current[v] = audio;
+      });
+    }
+  }, [step]);
+
+  const playPreview = (v: string) => {
+    // Stop all current audio
+    Object.values(audioRefs.current).forEach(a => {
+      a.pause();
+      a.currentTime = 0;
+    });
+
+    // Play selected
+    const audio = audioRefs.current[v];
+    if (audio) {
+      audio.play().catch(e => console.error("[TTS] Preview error:", e));
+    }
+  };
+
   const handleNext = () => {
     if (step === 1) {
       if (useVoice === true) {
         setStep(2);
       } else {
-        // 아니오 선택 시: 보이스 비활성화 및 기본값 저장 후 바로 설문으로 이동
         localStorage.setItem('use_voice', 'false');
-        localStorage.setItem('user_voice_preference', 'nova'); // 강제 재생 시 사용할 기본 목소리
+        localStorage.setItem('user_voice_preference', 'nova');
         router.push('/survey');
       }
     } else {
-      // 보이스 설정 완료
       localStorage.setItem('use_voice', 'true');
       localStorage.setItem('user_voice_preference', voice);
       router.push('/survey');
@@ -96,14 +125,18 @@ export default function VoiceSetupPage() {
               <h1 className="text-2xl font-black text-gray-900 leading-snug">
                 안내 목소리를 <br /> 골라주세요
               </h1>
+              <p className="text-xs text-gray-400 font-bold tracking-tight">아이콘을 누르면 미리 들어볼 수 있습니다</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 px-2">
               <button 
-                onClick={() => setVoice('nova')}
+                onClick={() => {
+                  setVoice('nova');
+                  playPreview('nova');
+                }}
                 className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 ${voice === 'nova' ? 'border-primary bg-primary/5 shadow-soft z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
               >
-                <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center transition-all ${voice === 'nova' ? 'bg-primary text-white' : 'bg-gray-50'}`}>
+                <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center transition-all ${voice === 'nova' ? 'bg-primary text-white shadow-lg' : 'bg-gray-50'}`}>
                   <UserRound size={32} />
                 </div>
                 <div className="text-center">
@@ -113,10 +146,13 @@ export default function VoiceSetupPage() {
               </button>
               
               <button 
-                onClick={() => setVoice('onyx')}
+                onClick={() => {
+                  setVoice('onyx');
+                  playPreview('onyx');
+                }}
                 className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 ${voice === 'onyx' ? 'border-primary bg-primary/5 shadow-soft z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
               >
-                <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center transition-all ${voice === 'onyx' ? 'bg-primary text-white' : 'bg-gray-50'}`}>
+                <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center transition-all ${voice === 'onyx' ? 'bg-primary text-white shadow-lg' : 'bg-gray-50'}`}>
                   <User size={32} />
                 </div>
                 <div className="text-center">

@@ -8,73 +8,52 @@ import { motion } from 'framer-motion';
 export default function TherapiesPage() {
   const router = useRouter();
 
+  const handleGoHome = () => {
+    localStorage.setItem('has_done_action', 'true');
+    router.push('/');
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto relative pb-12 font-sans overflow-x-hidden">
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 z-20 bg-gray-50/90 backdrop-blur-md">
-        <button onClick={() => router.back()} className="p-3 bg-white rounded-2xl shadow-sm text-gray-400 hover:text-primary transition-all ring-1 ring-gray-100">
-           <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">치료 활동 로그</h1>
-        <div className="w-12 h-12 flex items-center justify-center">
-           <History className="text-gray-300" />
+    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,_#ffffff_0%,_#f9fafb_100%)]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="w-full max-w-md flex flex-col items-center gap-12"
+      >
+        <div className="h-64 flex items-center justify-center">
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.1, 1],
+              opacity: [0.3, 0.6, 0.3]
+            }}
+            transition={{ 
+              duration: 4, 
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="w-48 h-48 bg-primary/5 rounded-full blur-3xl"
+          />
         </div>
-      </header>
 
-      <section className="px-6 space-y-6">
-         <div className="bg-white rounded-[40px] p-8 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-black text-gray-900 mb-2">오늘의 달성률</h2>
-            <div className="flex items-end gap-3 mb-6">
-                <span className="text-5xl font-black text-primary tracking-tighter">100</span>
-                <span className="text-xl font-bold text-gray-400 mb-1">%</span>
-            </div>
-            <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
-                <div className="bg-primary w-full h-full rounded-full"></div>
-            </div>
-            <p className="text-sm font-bold text-gray-500 mt-4">오늘 계획된 활동을 모두 완료했습니다! 훌륭해요.</p>
-         </div>
+        <button
+          onClick={handleGoHome}
+          className="group relative flex flex-col items-center gap-6 p-12 bg-primary rounded-[48px] shadow-[0_32px_64px_-16px_rgba(30,64,175,0.4)] hover:shadow-[0_48px_80px_-20px_rgba(30,64,175,0.5)] active:scale-95 transition-all w-full"
+        >
+          <div className="p-6 bg-white/20 rounded-full backdrop-blur-md group-hover:scale-110 transition-transform duration-500">
+            <CheckCircle2 className="w-12 h-12 text-white" />
+          </div>
+          <span className="text-4xl font-black text-white tracking-tighter">처음으로</span>
+          
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-white text-primary rounded-full text-sm font-bold shadow-lg border border-primary/10 whitespace-nowrap">
+            활동 로그를 확인했습니다
+          </div>
+        </button>
 
-         <div className="space-y-4">
-            <h2 className="text-lg font-black text-gray-900 px-2 mt-4 flex items-center gap-2">
-               완료 내역 <CheckCircle2 size={18} className="text-emerald-500" />
-            </h2>
-            
-            <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex items-start gap-4">
-               <div className="w-12 h-12 rounded-2xl bg-orange-50 flex flex-shrink-0 items-center justify-center mt-1">
-                  <Sun size={24} className="text-orange-500" />
-               </div>
-               <div>
-                  <div className="flex justify-between items-center mb-1">
-                     <h3 className="text-[17px] font-black text-gray-900">햇볕 아래 감각 요법</h3>
-                     <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-1 rounded-full uppercase tracking-wider">오전 10:20</span>
-                  </div>
-                  <p className="text-sm text-gray-500 font-bold leading-relaxed">
-                     따뜻한 햇살 아래에서 15분간 산책하며 세로토닌을 충전했습니다.
-                  </p>
-               </div>
-            </div>
-
-            <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex items-start gap-4">
-               <div className="w-12 h-12 rounded-2xl bg-blue-50 flex flex-shrink-0 items-center justify-center mt-1">
-                  <Wind size={24} className="text-blue-500" />
-               </div>
-               <div>
-                  <div className="flex justify-between items-center mb-1">
-                     <h3 className="text-[17px] font-black text-gray-900">깊은 복식 호흡</h3>
-                     <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-1 rounded-full uppercase tracking-wider">오후 03:45</span>
-                  </div>
-                  <p className="text-sm text-gray-500 font-bold leading-relaxed">
-                     긴장을 풀고 복식 호흡을 하여 자율신경계 균형을 맞췄습니다.
-                  </p>
-               </div>
-            </div>
-         </div>
-
-         <div className="pt-8 text-center">
-            <span className="inline-flex px-4 py-2 bg-gray-200/50 rounded-full text-[11px] font-black tracking-widest uppercase text-gray-400">
-               맞춤형 디지털 치료 솔루션
-            </span>
-         </div>
-      </section>
-    </div>
+        <p className="text-gray-400 font-medium text-lg opacity-60">
+          오늘의 건강한 관리, 아주 훌륭합니다.
+        </p>
+      </motion.div>
+    </main>
   );
 }
