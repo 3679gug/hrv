@@ -82,13 +82,13 @@ const TrendChart = ({ data, colors, showPhq9 = false }: { data: ReportDataItem[]
         
         {/* Y Axis Labels */}
         {[0, 50, 100].map(val => (
-          <text key={val} x={padding - 10} y={getY(val, 100) + 4} className="text-[10px] fill-gray-300 font-bold" textAnchor="end">
+          <text key={val} x={padding - 10} y={getY(val, 100) + 4} className="text-[10px] fill-gray-900 font-black" textAnchor="end">
             {val}
           </text>
         ))}
 
         {data.map((d, i) => (
-          <text key={i} x={getX(i)} y={height - padding + 20} className="text-[11px] fill-gray-400 font-bold" textAnchor="middle">
+          <text key={i} x={getX(i)} y={height - padding + 20} className="text-[11px] fill-gray-900 font-black" textAnchor="middle">
             {d.label}
           </text>
         ))}
@@ -277,7 +277,7 @@ export default function ReportsPage() {
                  <div className="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6">
                     <Activity size={32} className="text-primary" />
                  </div>
-                 <p className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-3">평균 맥박 수치</p>
+                 <p className="text-sm font-black text-gray-900 uppercase tracking-[0.2em] mb-3">평균 맥박 수치</p>
                  <div className="flex items-baseline gap-2 mb-6">
                     <span className="text-6xl font-black text-gray-900 tracking-tighter">
                        {(() => {
@@ -304,7 +304,7 @@ export default function ReportsPage() {
                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6">
                     <TrendingUp size={32} className="text-emerald-500" />
                  </div>
-                 <p className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] mb-3">평균 심박변이도</p>
+                 <p className="text-sm font-black text-gray-900 uppercase tracking-[0.2em] mb-3">평균 심박변이도</p>
                  <div className="flex items-baseline gap-2 mb-6">
                     <span className="text-6xl font-black text-gray-900 tracking-tighter">
                        {(() => {
@@ -340,7 +340,7 @@ export default function ReportsPage() {
                  </div>
                  <div className="text-left">
                     <h3 className="text-lg font-black text-gray-900">치료 활동 로그</h3>
-                    <p className="text-xs text-gray-400 font-bold mt-1">나의 일일 활동 기록 확인하기</p>
+                    <p className="text-xs text-gray-900 font-bold mt-1">나의 일일 활동 기록 확인하기</p>
                  </div>
               </div>
               <ChevronRight size={24} className="text-gray-300 group-hover:translate-x-1 group-hover:text-primary transition-all" />

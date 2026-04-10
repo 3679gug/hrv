@@ -62,32 +62,32 @@ export default function ProfilePage() {
           <section className="flex-1 space-y-10">
             {/* Gender Selection */}
             <div className="space-y-4">
-              <p className="text-gray-500 font-bold text-sm ml-1">성별을 선택해 주세요</p>
+              <p className="text-gray-900 font-black text-sm ml-1">성별을 선택해 주세요</p>
               <div className="grid grid-cols-2 gap-4">
                 <button 
                   onClick={() => setGender(0)}
                   className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-3 ${gender === 0 ? 'border-primary bg-primary/5 shadow-soft' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-400'}`}
                 >
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${gender === 0 ? 'bg-primary text-white' : 'bg-gray-100'}`}>
-                     <User size={32} />
+                     <User size={32} className={gender === 0 ? '' : 'text-gray-900'} />
                   </div>
-                  <span className={`font-bold ${gender === 0 ? 'text-primary' : ''}`}>남성</span>
+                  <span className={`font-black ${gender === 0 ? 'text-primary' : 'text-gray-900'}`}>남성</span>
                 </button>
                 <button 
                   onClick={() => setGender(1)}
                   className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-3 ${gender === 1 ? 'border-primary bg-primary/5 shadow-soft' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-400'}`}
                 >
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${gender === 1 ? 'bg-primary text-white' : 'bg-gray-100'}`}>
-                     <UserRound size={32} />
+                     <UserRound size={32} className={gender === 1 ? '' : 'text-gray-900'} />
                   </div>
-                  <span className={`font-bold ${gender === 1 ? 'text-primary' : ''}`}>여성</span>
+                  <span className={`font-black ${gender === 1 ? 'text-primary' : 'text-gray-900'}`}>여성</span>
                 </button>
               </div>
             </div>
 
             {/* Age Selection */}
             <div className="space-y-4">
-              <p className="text-gray-500 font-bold text-sm ml-1">나이를 입력해 주세요</p>
+              <p className="text-gray-900 font-black text-sm ml-1">나이를 입력해 주세요</p>
               <div className="bg-white rounded-[32px] p-6 border-2 border-gray-100 shadow-sm flex items-center justify-between">
                 <button 
                   onClick={() => setAge(Math.max(1, age - 1))}
@@ -106,7 +106,7 @@ export default function ProfilePage() {
                     }}
                     className="w-32 bg-transparent text-6xl font-black text-primary text-center focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-pointer hover:bg-primary/5 rounded-2xl transition-all"
                   />
-                  <span className="text-xl font-bold text-primary/40 block mt-1">세</span>
+                  <span className="text-xl font-black text-gray-900 block mt-1">세</span>
                 </div>
                 <button 
                   onClick={() => setAge(Math.min(120, age + 1))}

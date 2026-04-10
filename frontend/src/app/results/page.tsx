@@ -155,7 +155,7 @@ export default function ResultsPage() {
             <Heart className="w-12 h-12 text-primary fill-primary/20" />
           </div>
           <h2 className="text-3xl font-black text-gray-900 leading-tight">{displayStatus}</h2>
-          <p className="text-[18px] text-gray-500 font-bold leading-relaxed px-4">{displayMsg}</p>
+          <p className="text-[18px] text-gray-900 font-bold leading-relaxed px-4">{displayMsg}</p>
         </section>
 
         {/* AI Advice Card */}
@@ -207,7 +207,7 @@ export default function ResultsPage() {
       {/* Navigation */}
       <footer className="fixed bottom-0 left-0 right-0 h-24 bg-white/80 backdrop-blur-xl border-t border-gray-100 px-10 flex justify-between items-center z-50 max-w-md mx-auto">
         <button onClick={() => router.push('/')} className="hover:scale-110 transition-transform">
-          <Home className="w-6 h-6 text-gray-400" />
+          <Home className="w-6 h-6 text-gray-900" />
         </button>
         <div className="relative">
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 p-4 bg-primary rounded-full shadow-premium text-white">
@@ -215,10 +215,10 @@ export default function ResultsPage() {
           </div>
         </div>
         <button onClick={() => router.push('/therapy')} className="hover:scale-110 transition-transform">
-          <Zap className="w-6 h-6 text-gray-400" />
+          <Zap className="w-6 h-6 text-gray-900" />
         </button>
         <button onClick={() => router.push('/profile')} className="hover:scale-110 transition-transform">
-          <User className="w-6 h-6 text-gray-400" />
+          <User className="w-6 h-6 text-gray-900" />
         </button>
       </footer>
     </div>

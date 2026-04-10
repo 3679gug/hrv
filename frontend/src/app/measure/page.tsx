@@ -376,7 +376,7 @@ export default function MeasurePage() {
                 </div>
 
                 <div className="absolute top-8 left-0 right-0 flex justify-center">
-                  <div className={`backdrop-blur-md px-6 py-2 rounded-full border text-sm font-bold shadow-lg transition-all ${isFaceValid ? 'bg-white/20 border-white/30 text-white' : 'bg-red-500 border-red-400 text-white animate-bounce'}`}>
+                  <div className={`backdrop-blur-md px-6 py-2 rounded-full border text-sm font-black shadow-lg transition-all ${isFaceValid ? 'bg-white/40 border-white/60 text-gray-900' : 'bg-red-500 border-red-400 text-white animate-bounce'}`}>
                     {status}
                   </div>
                 </div>
@@ -397,7 +397,7 @@ export default function MeasurePage() {
               </div>
 
               <div className="mt-8 text-center">
-                <p className="text-gray-400 text-sm font-medium">카메라를 바라보며 밝은 곳에서 측정해 주세요.</p>
+                <p className="text-gray-900 text-sm font-bold">카메라를 바라보며 밝은 곳에서 측정해 주세요.</p>
               </div>
             </div>
           </motion.div>

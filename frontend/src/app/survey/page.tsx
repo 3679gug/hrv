@@ -54,38 +54,45 @@ export default function SurveyPage() {
     return () => stopAudio(); // Cleanup on unmount
   }, []);
 
-  // Optimized: Cache for pre-instantiated Audio objects
-  const audioCacheRef = useRef<Record<string, HTMLAudioElement>>({});
+  // Optimized: Cache for pre-fetched audio Blob URLs
+  const blobCacheRef = useRef<Record<string, string>>({});
   const [isPreloading, setIsPreloading] = useState(false);
 
-  // Helper to fetch and cache a single audio object
+  // Helper to fetch and cache a single audio as a Blob URL
   const preloadAudio = async (index: number, voice: string) => {
     const cacheKey = `${index}_${voice}`;
-    if (audioCacheRef.current[cacheKey]) return;
+    if (blobCacheRef.current[cacheKey]) return;
 
     try {
       const text = PHQ9_QUESTIONS[index];
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
       const url = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${voice}&t=${Date.now()}`;
       
-      const audio = new Audio(url);
-      audio.load(); // Start loading in background
-      audioCacheRef.current[cacheKey] = audio;
+      const response = await fetch(url);
+      if (response.ok) {
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        blobCacheRef.current[cacheKey] = objectUrl;
+        console.log(`[TTS] Preloaded question ${index + 1}`);
+      }
     } catch (e) {
       console.error(`[TTS] Preload error for ${cacheKey}:`, e);
     }
   };
 
-  // Pre-load all question voices into memory
+  // Sequential pre-load of all question voices into memory to avoid server overload
   useEffect(() => {
     const preLoadAll = async () => {
       setIsPreloading(true);
-      // 1. High Priority: Current
+      // 1. High Priority: Current question
       await preloadAudio(currentIdx, selectedVoice);
-      // 2. Background: Others
-      PHQ9_QUESTIONS.forEach((_, index) => {
-        if (index !== currentIdx) preloadAudio(index, selectedVoice);
-      });
+      
+      // 2. Background: Preload all others sequentially
+      for (let i = 0; i < PHQ9_QUESTIONS.length; i++) {
+        if (i !== currentIdx) {
+          await preloadAudio(i, selectedVoice);
+        }
+      }
       setIsPreloading(false);
     };
     preLoadAll();
@@ -96,15 +103,15 @@ export default function SurveyPage() {
       stopAudio(); // Reset current
 
       const cacheKey = `${currentIdx}_${selectedVoice}`;
-      let audio = audioCacheRef.current[cacheKey];
+      let audioUrl = blobCacheRef.current[cacheKey];
 
-      if (!audio) {
+      // If not cached yet, fetch on-the-fly (emergency)
+      if (!audioUrl) {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
-        const url = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}`;
-        audio = new Audio(url);
-        audioCacheRef.current[cacheKey] = audio;
+        audioUrl = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}`;
       }
 
+      const audio = new Audio(audioUrl);
       audioRef.current = audio;
       await audio.play();
     } catch (error) {
@@ -179,9 +186,9 @@ export default function SurveyPage() {
         <div className="flex justify-between items-end mb-4">
           <div>
             <span className="text-4xl font-black text-primary">{currentIdx + 1}</span>
-            <span className="text-xl font-bold text-gray-300 ml-1">/ 9</span>
+            <span className="text-xl font-bold text-gray-900 ml-1">/ 9</span>
           </div>
-          <span className="text-[10px] font-bold text-gray-400 mb-1 tracking-wider uppercase">우울 지수 평가</span>
+          <span className="text-[10px] font-bold text-gray-900 mb-1 tracking-wider uppercase">우울 지수 평가</span>
         </div>
         <Progress.Root className="relative overflow-hidden bg-white rounded-full w-full h-3 border border-gray-100/50">
           <Progress.Indicator
@@ -199,9 +206,9 @@ export default function SurveyPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="card p-8 min-h-[220px] flex flex-col items-center justify-center text-center mb-8 relative border-none shadow-none bg-primary/5 rounded-[40px]"
+            className="card p-8 min-h-[220px] flex flex-col items-center justify-center text-center mb-8 relative border-none shadow-none bg-primary/10 rounded-[40px]"
           >
-            <h3 className="text-2xl font-black leading-[1.6] text-gray-800 break-keep px-4">
+            <h3 className="text-2xl font-black leading-[1.6] text-gray-900 break-keep px-4">
               {PHQ9_QUESTIONS[currentIdx]}
             </h3>
           </motion.div>
@@ -216,11 +223,11 @@ export default function SurveyPage() {
               onClick={() => setSelected(opt.score)}
               className={`w-full p-5 text-left rounded-[32px] border-2 transition-all flex items-center gap-4 group ${selected === opt.score
                   ? 'bg-primary border-primary shadow-xl shadow-primary/20'
-                  : 'bg-white border-gray-100 hover:border-gray-200'
+                  : 'bg-white border-gray-100 hover:border-gray-300'
                 }`}
             >
               <div className="flex-1">
-                <span className={`text-xl font-black leading-tight block ${selected === opt.score ? 'text-white' : 'text-gray-800'}`}>
+                <span className={`text-xl font-black leading-tight block ${selected === opt.score ? 'text-white' : 'text-gray-900'}`}>
                   {opt.label}
                 </span>
               </div>
@@ -244,13 +251,13 @@ export default function SurveyPage() {
           disabled={selected === null}
           className={`w-full py-6 rounded-[32px] font-black text-xl flex items-center justify-center gap-3 transition-all ${selected !== null
               ? 'bg-gray-900 text-white shadow-2xl shadow-gray-200'
-              : 'bg-gray-100 text-gray-300'
+              : 'bg-gray-100 text-gray-400'
             }`}
         >
           <span>{currentIdx < 8 ? '다음 질문' : (flowType === '2' ? '생체 신호 측정하기' : '결과 리포트 확인')}</span>
           <ChevronRight size={24} />
         </button>
-        <p className="text-[10px] text-center text-gray-400 font-bold mt-6 tracking-widest uppercase opacity-60">
+        <p className="text-[10px] text-center text-gray-900 font-bold mt-6 tracking-widest uppercase opacity-80">
           PHQ-9 Clinical Standard Assessment
         </p>
       </footer>
