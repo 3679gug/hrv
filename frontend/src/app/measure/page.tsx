@@ -264,7 +264,8 @@ export default function MeasurePage() {
       }
     } catch (error: any) {
       console.error("[HRV] API Error:", error.message);
-      setStatus("분석 오류. 다시 시도해 주세요.");
+      const errorMsg = error.response?.data?.detail || "분석 오류. 다시 시도해 주세요.";
+      setStatus(errorMsg);
       setIsAnalyzing(false);
       isProcessingRef.current = false;
     }

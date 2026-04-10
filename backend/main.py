@@ -48,7 +48,7 @@ def analyze(data: AnalyzeRequest):
     result = pipeline.pipeline.process_frames(data.rgb_means, data.gender, data.age)
     
     if "error" in result:
-        raise HTTPException(status_code=500, detail=result["error"])
+        raise HTTPException(status_code=400, detail=result["error"])
     
     return result
 

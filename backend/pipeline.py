@@ -100,9 +100,10 @@ class Pipeline:
             data = np.array(rgb_means)
             r, g, b = data[:, 0], data[:, 1], data[:, 2]
             
-            # Quality check
-            if np.std(g) < 0.05:
-                 return {"error": "측정 품질 저하 (조명이 너무 어둡거나 움직임이 큽니다)"}
+            # 1. Faster Preprocessing
+            # [Optimization] Relaxed threshold for low-light/hat environments
+            if np.std(g) < 0.01: 
+                 return {"error": "측정 품질 저하 (카메라가 가려졌거나 조명이 너무 어둡습니다)"}
 
             # 1. Faster Preprocessing
             ppg_signal = self.extract_chrom(r, g, b, FS_CAMERA)
