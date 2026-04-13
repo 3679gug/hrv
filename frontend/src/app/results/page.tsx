@@ -162,7 +162,7 @@ export default function ResultsPage() {
         <section className="bg-white rounded-[56px] p-10 border-2 border-primary/10 shadow-premium">
           <div className="flex items-center gap-4 mb-6">
              <div className="p-3 bg-primary/20 rounded-2xl"><Sparkles className="w-8 h-8 text-gray-900" /></div>
-             <h3 className="text-xl font-black text-gray-900">마음 선생님의 조원</h3>
+             <h3 className="text-xl font-black text-gray-900">마음이음의 조언</h3>
           </div>
           <p className="text-[22px] text-gray-900 leading-[1.7] font-black tracking-tight">
             "{getElderlySummary(data?.hrv_ms || 42, data?.bpm || 72, finalScore)}"
