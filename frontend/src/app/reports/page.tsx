@@ -196,18 +196,18 @@ export default function ReportsPage() {
       </header>
 
       <section className="px-6 py-2 space-y-8">
-        <div className="bg-gray-200/50 p-1.5 rounded-[28px] flex gap-1 shadow-inner ring-1 ring-gray-100">
+        <div className="bg-gray-200/50 p-2 rounded-[32px] flex gap-2 shadow-inner ring-1 ring-gray-100">
           {(['compare', 'weekly', 'monthly', 'yearly'] as const).map((type) => (
             <button
               key={type}
               onClick={() => setViewType(type)}
-              className={`flex-1 py-3 px-1 rounded-[22px] text-[13px] font-black transition-all ${
+              className={`flex-1 py-4 px-1 rounded-[24px] text-[15px] font-black transition-all ${
                 viewType === type 
-                  ? 'bg-white text-primary shadow-sm scale-[1.05]' 
+                  ? 'bg-primary text-gray-900 shadow-sm scale-[1.02]' 
                   : 'text-gray-400 hover:text-gray-500'
               }`}
             >
-              {type === 'compare' ? '어제와 비교' : type === 'weekly' ? '이번 주' : type === 'monthly' ? '이번 달' : '올해'}
+              {type === 'compare' ? '비교' : type === 'weekly' ? '이번 주' : type === 'monthly' ? '이번 달' : '올해'}
             </button>
           ))}
         </div>

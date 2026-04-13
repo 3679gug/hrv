@@ -280,18 +280,17 @@ export default function MeasurePage() {
           animate={{ opacity: 1, scale: 1 }}
           className="flex-1 flex flex-col"
         >
-          <header className="p-6 flex justify-between items-center text-primary">
-            <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-white transition-colors">
+          <header className="p-8 flex justify-between items-center text-gray-900 sticky top-0 z-10 bg-gray-50/80 backdrop-blur-md">
+            <button onClick={() => router.back()} className="p-3 bg-white rounded-2xl shadow-sm text-gray-400 hover:text-gray-900 transition-all ring-1 ring-gray-100">
               <ArrowLeft size={24} />
             </button>
-            <h1 className="text-xl font-bold">심박 신호 측정</h1>
-            <div className="w-10 h-10" />
+            <h1 className="text-2xl font-black">심박 신호 측정</h1>
+            <div className="w-12 h-12" />
           </header>
 
             <div className="flex-1 px-8 py-4 flex flex-col items-center">
-              <div className="text-center mb-8 space-y-2">
-                <p className="text-primary font-bold tracking-widest text-xs uppercase opacity-60">MEASURING HEART WEATHER</p>
-                <h2 className="text-3xl font-black text-gray-900">당신의 마음은 어떤가요?</h2>
+              <div className="text-center mb-10 space-y-3">
+                <h2 className="text-4xl font-black text-gray-900 leading-tight">당신의 마음은 <br /> 어떤가요?</h2>
               </div>
 
               {/* Video Frame */}

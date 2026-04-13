@@ -42,60 +42,57 @@ export default function ProfilePage() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 20 }}
-          className="flex-1 flex flex-col p-8 pb-12"
+          className="flex-1 flex flex-col p-6 pb-10"
         >
-          <header className="mb-12">
-            <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full hover:bg-white text-primary mb-6 transition-colors">
+          <header className="mb-8">
+            <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full hover:bg-white text-primary mb-4 transition-colors">
               <ArrowLeft size={24} />
             </button>
-            <div className="space-y-3">
-              <div className="inline-flex px-3 py-1 bg-primary/10 rounded-full text-primary text-xs font-bold tracking-widest uppercase">
-                Step 1. Profile
-              </div>
-              <h1 className="text-3xl font-black text-gray-900 leading-tight">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-black text-gray-900 leading-tight">
                 정밀 측정을 위해 <br />
                 기본 정보를 입력해 주세요.
               </h1>
             </div>
           </header>
 
-          <section className="flex-1 space-y-10">
+          <section className="flex-1 space-y-8">
             {/* Gender Selection */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <p className="text-gray-900 font-black text-sm ml-1">성별을 선택해 주세요</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <button 
                   onClick={() => setGender(0)}
-                  className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-3 ${gender === 0 ? 'border-primary bg-primary/5 shadow-soft' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-400'}`}
+                  className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-3 ${gender === 0 ? 'border-primary bg-primary/20 shadow-lg' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-400'}`}
                 >
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${gender === 0 ? 'bg-primary text-white' : 'bg-gray-100'}`}>
-                     <User size={32} className={gender === 0 ? '' : 'text-gray-900'} />
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${gender === 0 ? 'bg-primary text-gray-900 shadow-sm' : 'bg-gray-100'}`}>
+                     <User size={24} className={gender === 0 ? '' : 'text-gray-600'} />
                   </div>
-                  <span className={`font-black ${gender === 0 ? 'text-primary' : 'text-gray-900'}`}>남성</span>
+                  <span className={`text-lg font-black text-gray-900`}>남성</span>
                 </button>
                 <button 
                   onClick={() => setGender(1)}
-                  className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-3 ${gender === 1 ? 'border-primary bg-primary/5 shadow-soft' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-400'}`}
+                  className={`p-8 rounded-[40px] border-2 transition-all flex flex-col items-center gap-4 ${gender === 1 ? 'border-primary bg-primary/20 shadow-xl' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-400'}`}
                 >
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${gender === 1 ? 'bg-primary text-white' : 'bg-gray-100'}`}>
-                     <UserRound size={32} className={gender === 1 ? '' : 'text-gray-900'} />
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all ${gender === 1 ? 'bg-primary text-gray-900 shadow-md' : 'bg-gray-100'}`}>
+                     <UserRound size={32} className={gender === 1 ? '' : 'text-gray-600'} />
                   </div>
-                  <span className={`font-black ${gender === 1 ? 'text-primary' : 'text-gray-900'}`}>여성</span>
+                  <span className={`text-xl font-black text-gray-900`}>여성</span>
                 </button>
               </div>
             </div>
 
             {/* Age Selection */}
             <div className="space-y-4">
-              <p className="text-gray-900 font-black text-sm ml-1">나이를 입력해 주세요</p>
-              <div className="bg-white rounded-[32px] p-6 border-2 border-gray-100 shadow-sm flex items-center justify-between">
+              <p className="text-gray-900 font-black text-lg ml-1 tracking-tight">나이를 입력해 주세요</p>
+              <div className="bg-white rounded-[40px] p-6 border-2 border-gray-100 shadow-sm flex items-center justify-between">
                 <button 
                   onClick={() => setAge(Math.max(1, age - 1))}
-                  className="w-14 h-14 rounded-[20px] bg-gray-50 flex items-center justify-center text-primary font-black text-3xl active:scale-95 transition-all hover:bg-gray-100"
+                  className="w-16 h-16 rounded-[24px] bg-gray-50 flex items-center justify-center text-gray-900 font-black text-3xl active:scale-90 transition-all hover:bg-primary/20"
                 >
                   -
                 </button>
-                <div className="text-center relative group">
+                <div className="text-center">
                   <input 
                     type="number"
                     value={age}
@@ -104,13 +101,13 @@ export default function ProfilePage() {
                       if (!isNaN(val)) setAge(Math.min(120, Math.max(1, val)));
                       else if (e.target.value === '') setAge('' as any);
                     }}
-                    className="w-32 bg-transparent text-6xl font-black text-primary text-center focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-pointer hover:bg-primary/5 rounded-2xl transition-all"
+                    className="w-24 bg-transparent text-6xl font-black text-gray-900 text-center focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="text-xl font-black text-gray-900 block mt-1">세</span>
+                  <span className="text-xl font-black text-gray-600">세</span>
                 </div>
                 <button 
                   onClick={() => setAge(Math.min(120, age + 1))}
-                  className="w-14 h-14 rounded-[20px] bg-gray-50 flex items-center justify-center text-primary font-black text-3xl active:scale-95 transition-all hover:bg-gray-100"
+                  className="w-16 h-16 rounded-[24px] bg-gray-50 flex items-center justify-center text-gray-900 font-black text-3xl active:scale-90 transition-all hover:bg-primary/20"
                 >
                   +
                 </button>

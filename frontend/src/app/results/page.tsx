@@ -134,37 +134,37 @@ export default function ResultsPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto relative pb-96">
       {/* Header */}
-      <header className="p-6 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-40 text-primary">
-        <button onClick={() => router.back()} className="p-2 hover:bg-white rounded-full transition-all">
+      <header className="p-8 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-40 text-gray-900">
+        <button onClick={() => router.back()} className="p-3 bg-white rounded-2xl shadow-sm text-gray-400 hover:text-gray-900 transition-all ring-1 ring-gray-100">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-xl font-bold">오늘의 상태</h1>
-        <button className="p-2 hover:bg-white rounded-full transition-all">
+        <h1 className="text-2xl font-black">오늘의 상태</h1>
+        <button className="p-3 bg-white rounded-2xl shadow-sm text-gray-400">
           <Share2 className="w-6 h-6" />
         </button>
       </header>
 
-      <main className="flex-1 px-6 pt-6 space-y-8 text-primary">
-        <section className="text-center space-y-3 py-6">
+      <main className="flex-1 px-8 pt-6 space-y-10 text-gray-900">
+        <section className="text-center space-y-4 py-8">
           {profile && (
-            <p className="text-primary font-bold text-sm tracking-widest uppercase mb-1">
+            <p className="text-gray-900 font-black text-xs tracking-[0.2em] uppercase opacity-40 mb-2">
               {profile.age}세 {profile.gender === 0 ? '남성' : '여성'} 어르신
             </p>
           )}
-          <div className="inline-flex p-5 bg-white rounded-full shadow-soft mb-2">
-            <Heart className="w-12 h-12 text-primary fill-primary/20" />
+          <div className="inline-flex p-8 bg-primary rounded-[40px] shadow-xl mb-4">
+            <Heart className="w-16 h-16 text-gray-900 fill-white/20" />
           </div>
-          <h2 className="text-3xl font-black text-gray-900 leading-tight">{displayStatus}</h2>
-          <p className="text-[18px] text-gray-900 font-bold leading-relaxed px-4">{displayMsg}</p>
+          <h2 className="text-5xl font-black text-gray-900 leading-[1.1] tracking-tighter">{displayStatus}</h2>
+          <p className="text-2xl text-gray-900 font-bold leading-relaxed px-2">{displayMsg}</p>
         </section>
 
         {/* AI Advice Card */}
-        <section className="bg-white/80 backdrop-blur-md rounded-[40px] p-8 border border-white shadow-premium">
-          <div className="flex items-center gap-3 mb-5">
-             <div className="p-2 bg-primary/10 rounded-xl"><Sparkles className="w-6 h-6 text-primary" /></div>
-             <h3 className="text-lg font-bold text-gray-800">마음 선생님의 조언</h3>
+        <section className="bg-white rounded-[56px] p-10 border-2 border-primary/10 shadow-premium">
+          <div className="flex items-center gap-4 mb-6">
+             <div className="p-3 bg-primary/20 rounded-2xl"><Sparkles className="w-8 h-8 text-gray-900" /></div>
+             <h3 className="text-xl font-black text-gray-900">마음 선생님의 조원</h3>
           </div>
-          <p className="text-[19px] text-gray-800 leading-[1.7] font-bold tracking-tight">
+          <p className="text-[22px] text-gray-900 leading-[1.7] font-black tracking-tight">
             "{getElderlySummary(data?.hrv_ms || 42, data?.bpm || 72, finalScore)}"
           </p>
         </section>
@@ -172,20 +172,20 @@ export default function ResultsPage() {
       </main>
 
       {/* Action Buttons Section */}
-      <div className="fixed bottom-24 left-0 right-0 px-6 z-10 max-w-md mx-auto space-y-3 bg-gradient-to-t from-gray-50 via-gray-50/90 to-transparent pt-10 pb-4">
-        <div className="grid grid-cols-2 gap-3">
+      <div className="fixed bottom-24 left-0 right-0 px-8 z-40 max-w-md mx-auto space-y-4 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent pt-12 pb-6">
+        <div className="grid grid-cols-2 gap-4">
           <button 
             onClick={() => router.push('/reports')}
-            className="flex-1 py-5 bg-white text-primary border-2 border-primary/20 rounded-3xl text-[16px] font-black shadow-soft active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-6 bg-white text-gray-900 border-2 border-gray-100 rounded-[32px] text-xl font-black shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-3"
           >
-            <TrendingUp className="w-5 h-5" />
-            <span>그동안의 변화</span>
+            <TrendingUp className="w-6 h-6" />
+            <span>변화 확인</span>
           </button>
           <button 
             onClick={() => router.push('/therapy')}
-            className="flex-1 py-5 bg-gradient-to-r from-primary to-blue-700 text-white rounded-3xl text-[16px] font-black shadow-premium active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-6 bg-primary text-gray-900 rounded-[32px] text-xl font-black shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
           >
-            <Zap className="w-5 h-5" />
+            <Zap className="w-6 h-6 fill-current" />
             <span>치료하기</span>
           </button>
         </div>
@@ -196,9 +196,9 @@ export default function ResultsPage() {
               localStorage.removeItem('has_done_action'); 
               router.push('/');
             }}
-            className="w-full py-5 bg-gray-900 text-white rounded-3xl text-xl font-black shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 border-4 border-white/10"
+            className="w-full py-6 bg-gray-900 text-white rounded-[32px] text-2xl font-black shadow-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
           >
-            <Activity className="w-6 h-6 text-primary" />
+            <Activity className="w-7 h-7 text-primary" />
             <span>다시 측정하기</span>
           </button>
         )}

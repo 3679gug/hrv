@@ -3,18 +3,20 @@
 
 @theme {
   --color-background: #FFFFFF;
-  --color-foreground: #1A1A2E;
-  --color-primary: #3B5FE8;
-  --color-secondary: #EFF6FF;
-  --color-accent: #E8C547;
+  --color-foreground: #000000;
+  --color-primary: #FFDE59;
+  --color-primary-dark: #F4CE3A;
+  --color-secondary: #FFF9E5;
+  --color-accent: #1A1A1A;
 }
 
 :root {
   --background: #FFFFFF;
-  --foreground: #1A1A2E;
-  --primary: #3B5FE8;
-  --secondary: #EFF6FF;
-  --accent: #E8C547;
+  --foreground: #000000;
+  --primary: #FFDE59;
+  --primary-dark: #F4CE3A;
+  --secondary: #FFF9E5;
+  --accent: #1A1A1A;
 }
 
 body {

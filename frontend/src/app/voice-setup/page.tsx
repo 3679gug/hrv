@@ -65,7 +65,6 @@ export default function VoiceSetupPage() {
           <ArrowLeft size={24} />
         </button>
         <div className="flex flex-col items-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Voice Setup</span>
         </div>
         <div className="w-12" />
       </header>
@@ -122,10 +121,10 @@ export default function VoiceSetupPage() {
             className="flex-1 flex flex-col justify-center"
           >
             <div className="text-center space-y-4 mb-10">
-              <h1 className="text-2xl font-black text-gray-900 leading-snug">
+              <h1 className="text-4xl font-black text-gray-900 leading-tight">
                 안내 목소리를 <br /> 골라주세요
               </h1>
-              <p className="text-xs text-gray-400 font-bold tracking-tight">아이콘을 누르면 미리 들어볼 수 있습니다</p>
+              <p className="text-sm text-gray-900 font-black tracking-tight opacity-60">아이콘을 누르면 미리 들어볼 수 있습니다</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 px-2">
@@ -134,14 +133,14 @@ export default function VoiceSetupPage() {
                   setVoice('nova');
                   playPreview('nova');
                 }}
-                className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 ${voice === 'nova' ? 'border-primary bg-primary/5 shadow-soft z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
+                className={`p-8 rounded-[48px] border-2 transition-all flex flex-col items-center gap-6 ${voice === 'nova' ? 'border-primary bg-primary/20 shadow-xl z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
               >
-                <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center transition-all ${voice === 'nova' ? 'bg-primary text-white shadow-lg' : 'bg-gray-50'}`}>
-                  <UserRound size={32} />
+                <div className={`w-20 h-20 rounded-[32px] flex items-center justify-center transition-all ${voice === 'nova' ? 'bg-primary text-gray-900 shadow-lg' : 'bg-gray-100'}`}>
+                  <UserRound size={40} />
                 </div>
                 <div className="text-center">
-                  <span className={`font-black block text-lg ${voice === 'nova' ? 'text-primary' : ''}`}>따뜻한 여성</span>
-                  <span className="text-xs opacity-60 font-bold mt-1 block">Nova 가이드</span>
+                  <span className={`font-black block text-2xl ${voice === 'nova' ? 'text-gray-900' : 'text-gray-900'}`}>따뜻한 여성</span>
+                  <span className="text-sm opacity-60 font-bold mt-2 block">Nova 가이드</span>
                 </div>
               </button>
               
@@ -150,14 +149,14 @@ export default function VoiceSetupPage() {
                   setVoice('onyx');
                   playPreview('onyx');
                 }}
-                className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-4 ${voice === 'onyx' ? 'border-primary bg-primary/5 shadow-soft z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
+                className={`p-8 rounded-[48px] border-2 transition-all flex flex-col items-center gap-6 ${voice === 'onyx' ? 'border-primary bg-primary/20 shadow-xl z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
               >
-                <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center transition-all ${voice === 'onyx' ? 'bg-primary text-white shadow-lg' : 'bg-gray-50'}`}>
-                  <User size={32} />
+                <div className={`w-20 h-20 rounded-[32px] flex items-center justify-center transition-all ${voice === 'onyx' ? 'bg-primary text-gray-900 shadow-lg' : 'bg-gray-100'}`}>
+                  <User size={40} />
                 </div>
                 <div className="text-center">
-                  <span className={`font-black block text-lg ${voice === 'onyx' ? 'text-primary' : ''}`}>신뢰감있는 남성</span>
-                  <span className="text-xs opacity-60 font-bold mt-1 block">Onyx 가이드</span>
+                  <span className={`font-black block text-2xl ${voice === 'onyx' ? 'text-gray-900' : 'text-gray-900'}`}>신뢰감있는 남성</span>
+                  <span className="text-sm opacity-60 font-bold mt-2 block">Onyx 가이드</span>
                 </div>
               </button>
             </div>

@@ -100,12 +100,14 @@ export default function SurveyPage() {
 
   const speakQuestion = async (text: string) => {
     try {
-      stopAudio(); // Reset current
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
 
       const cacheKey = `${currentIdx}_${selectedVoice}`;
       let audioUrl = blobCacheRef.current[cacheKey];
 
-      // If not cached yet, fetch on-the-fly (emergency)
       if (!audioUrl) {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
         audioUrl = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${selectedVoice}`;
@@ -113,16 +115,23 @@ export default function SurveyPage() {
 
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
-      await audio.play();
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          if (error.name !== 'AbortError') {
+            console.warn("[TTS] Audio play failed", error);
+          }
+        });
+      }
     } catch (error) {
-      console.warn("[TTS] Fast play failed", error);
+      console.warn("[TTS] Setup failed", error);
     }
   };
 
   // Add Auto-play effect
   useEffect(() => {
     if (isVoiceEnabled && !isPreloading) {
-       // Zero delay for preloaded audio
        speakQuestion(PHQ9_QUESTIONS[currentIdx]);
     }
   }, [currentIdx, isVoiceEnabled, isPreloading]);
@@ -137,8 +146,8 @@ export default function SurveyPage() {
   const handleNext = () => {
     if (selected === null) return;
 
-    // Stop speech if it's ongoing
-    if (typeof window !== 'undefined') window.speechSynthesis.cancel();
+    // Stop all audio before moving
+    stopAudio();
 
     const newAnswers = [...answers, selected];
     setAnswers(newAnswers);
@@ -160,21 +169,18 @@ export default function SurveyPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-6 font-sans">
       {/* Header */}
-      <header className="flex justify-between items-center mb-8">
+      <header className="flex justify-between items-center mb-6">
         <button onClick={() => router.back()} className="p-3 rounded-2xl bg-gray-50 text-gray-400 hover:text-primary transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <div className="flex flex-col items-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 mb-1">Step 2. Mind Survey</span>
-          <h1 className="text-sm font-black text-gray-900">마음 건강 설문</h1>
-        </div>
+        <h1 className="text-xl font-black text-gray-900">마음 건강 설문</h1>
         <button 
            onClick={() => {
              const newState = !isVoiceEnabled;
              setIsVoiceEnabled(newState);
              if (!newState) stopAudio();
            }}
-           className={`p-3 rounded-2xl transition-all duration-300 shadow-sm ${isVoiceEnabled ? 'bg-accent text-primary scale-110 shadow-accent/40' : 'bg-gray-50 text-gray-300'}`}
+           className={`p-3 rounded-2xl transition-all duration-300 shadow-sm ${isVoiceEnabled ? 'bg-primary text-gray-900 scale-105 shadow-primary/40' : 'bg-gray-100 text-gray-300'}`}
         >
           {isVoiceEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
         </button>
@@ -183,13 +189,6 @@ export default function SurveyPage() {
 
       {/* Progress Bar */}
       <div className="mb-10 p-6 bg-gray-50 rounded-[32px]">
-        <div className="flex justify-between items-end mb-4">
-          <div>
-            <span className="text-4xl font-black text-primary">{currentIdx + 1}</span>
-            <span className="text-xl font-bold text-gray-900 ml-1">/ 9</span>
-          </div>
-          <span className="text-[10px] font-bold text-gray-900 mb-1 tracking-wider uppercase">우울 지수 평가</span>
-        </div>
         <Progress.Root className="relative overflow-hidden bg-white rounded-full w-full h-3 border border-gray-100/50">
           <Progress.Indicator
             className="bg-primary w-full h-full transition-transform duration-700 ease-out"
@@ -206,11 +205,12 @@ export default function SurveyPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="card p-8 min-h-[220px] flex flex-col items-center justify-center text-center mb-8 relative border-none shadow-none bg-primary/10 rounded-[40px]"
+            className="card p-10 min-h-[300px] flex flex-col items-center justify-center text-center mb-8 relative border-none shadow-none bg-primary rounded-[56px]"
           >
-            <h3 className="text-2xl font-black leading-[1.6] text-gray-900 break-keep px-4">
+            <h3 className="text-4xl font-black leading-[1.4] text-gray-900 break-keep">
               {PHQ9_QUESTIONS[currentIdx]}
             </h3>
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 h-2 bg-gray-900/10 rounded-full" />
           </motion.div>
         </AnimatePresence>
 
@@ -257,9 +257,6 @@ export default function SurveyPage() {
           <span>{currentIdx < 8 ? '다음 질문' : (flowType === '2' ? '생체 신호 측정하기' : '결과 리포트 확인')}</span>
           <ChevronRight size={24} />
         </button>
-        <p className="text-[10px] text-center text-gray-900 font-bold mt-6 tracking-widest uppercase opacity-80">
-          PHQ-9 Clinical Standard Assessment
-        </p>
       </footer>
     </main>
   );
