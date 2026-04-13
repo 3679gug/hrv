@@ -44,8 +44,8 @@ export default function MeasurePage() {
   // Constants
   // Force rebuild for environment variable sync: 2026-04-10
   const TARGET_FRAMES = 900; // 30 seconds at 30fps
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
-  const API_URL = `${BACKEND_URL}/analyze`;
+  // BACKEND_URL을 직접 지정하여 환경 변수 누락 및 포트 점유로 인한 404 방지
+  const API_URL = "http://127.0.0.1:8002/analyze";
   const ROI_FOREHEAD = [10, 338, 297, 332, 284, 251, 67, 109];
   const ROI_CHEEKS = [118, 119, 100, 120, 121, 116, 117, 347, 348, 329, 349, 350, 345, 346];
 
@@ -272,7 +272,7 @@ export default function MeasurePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-900 flex flex-col max-w-md mx-auto relative overflow-hidden">
+    <main className="min-h-screen bg-white flex flex-col max-w-md mx-auto relative overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div 
           key="measure"
@@ -280,12 +280,11 @@ export default function MeasurePage() {
           animate={{ opacity: 1 }}
           className="flex-1 flex flex-col"
         >
-          {/* Transparent Header Over Video */}
-          <header className="p-6 flex justify-between items-center text-white absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/60 to-transparent">
-            <button onClick={() => router.back()} className="p-4 bg-white/10 backdrop-blur-md rounded-[24px] text-white shadow-xl active:scale-95 transition-all outline-none">
+          {/* Header */}
+          <header className="p-6 flex justify-between items-center text-gray-900 absolute top-0 left-0 right-0 z-50">
+            <button onClick={() => router.back()} className="p-4 bg-gray-100 rounded-[24px] text-gray-900 shadow-sm active:scale-95 transition-all outline-none">
               <ArrowLeft size={36} />
             </button>
-            <h1 className="text-3xl font-black tracking-tight">마음 측정</h1>
             <div className="w-14 h-14" />
           </header>
 

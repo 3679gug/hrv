@@ -6,6 +6,7 @@ from typing import List
 import pipeline
 import os
 import io
+import json
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -38,6 +39,23 @@ class AnalyzeRequest(BaseModel):
 @app.get("/")
 def read_root():
     return {"status": "Healthy", "message": "HRV Depression API is online"}
+
+@app.get("/user_db")
+def get_user_db():
+    """service/user_db.json 데이터를 로드하여 반환합니다."""
+    db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "service", "user_db.json")
+    try:
+        if os.path.exists(db_path):
+            with open(db_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                # hrv_sessions가 문자열로 저장되어 있을 경우 파싱
+                if isinstance(data.get("hrv_sessions"), str):
+                    data["hrv_sessions"] = json.loads(data["hrv_sessions"])
+                return data
+        return {"hrv_sessions": [], "message": "DB file not found"}
+    except Exception as e:
+        print(f"Error loading user_db.json: {e}")
+        return {"hrv_sessions": [], "error": str(e)}
 
 @app.post("/analyze")
 def analyze(data: AnalyzeRequest):
@@ -79,4 +97,4 @@ async def tts(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

@@ -4,18 +4,18 @@
 @theme {
   --color-background: #FFFFFF;
   --color-foreground: #000000;
-  --color-primary: #FFDE59;
-  --color-primary-dark: #F4CE3A;
-  --color-secondary: #FFF9E5;
+  --color-primary: #FDF2C2;
+  --color-primary-dark: #FBE6A0;
+  --color-secondary: #FFFBEB;
   --color-accent: #1A1A1A;
 }
 
 :root {
   --background: #FFFFFF;
   --foreground: #000000;
-  --primary: #FFDE59;
-  --primary-dark: #F4CE3A;
-  --secondary: #FFF9E5;
+  --primary: #FDF2C2;
+  --primary-dark: #FBE6A0;
+  --secondary: #FFFBEB;
   --accent: #1A1A1A;
 }
 
