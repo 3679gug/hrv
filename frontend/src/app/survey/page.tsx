@@ -146,7 +146,6 @@ export default function SurveyPage() {
   const handleNext = () => {
     if (selected === null) return;
 
-    // Stop all audio before moving
     stopAudio();
 
     const newAnswers = [...answers, selected];
@@ -167,90 +166,82 @@ export default function SurveyPage() {
   const progress = ((currentIdx + 1) / PHQ9_QUESTIONS.length) * 100;
 
   return (
-    <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-10 font-sans">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-8">
-        <button onClick={() => router.back()} className="p-4 rounded-[24px] bg-gray-50 text-gray-500 hover:text-primary transition-all shadow-md ring-2 ring-gray-100">
-          <ArrowLeft size={32} />
+    <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-4 font-sans">
+      <header className="flex justify-between items-center mb-6 px-2">
+        <button onClick={() => router.back()} className="p-5 rounded-[28px] bg-gray-50 text-gray-500 hover:text-primary transition-all shadow-md active:scale-95">
+          <ArrowLeft size={36} />
         </button>
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">마음 설문</h1>
+        <h1 className="text-4xl font-black text-gray-900 tracking-tight">마음 설문</h1>
         <button 
            onClick={() => {
              const newState = !isVoiceEnabled;
              setIsVoiceEnabled(newState);
              if (!newState) stopAudio();
            }}
-           className={`p-4 rounded-[24px] transition-all duration-300 shadow-lg ${isVoiceEnabled ? 'bg-primary text-gray-900 scale-110 shadow-primary/30' : 'bg-gray-100 text-gray-400'}`}
+           className={`p-5 rounded-[28px] transition-all duration-300 shadow-lg ${isVoiceEnabled ? 'bg-primary text-gray-900 scale-110 shadow-primary/30' : 'bg-gray-100 text-gray-400'}`}
         >
-          {isVoiceEnabled ? <Volume2 size={32} /> : <VolumeX size={32} />}
+          {isVoiceEnabled ? <Volume2 size={36} /> : <VolumeX size={36} />}
         </button>
       </header>
 
-
-      {/* Progress Bar */}
-      <div className="mb-10 p-6 bg-gray-50 rounded-[32px]">
-        <Progress.Root className="relative overflow-hidden bg-white rounded-full w-full h-3 border border-gray-100/50">
-          <Progress.Indicator
-            className="bg-primary w-full h-full transition-transform duration-700 ease-out"
-            style={{ transform: `translateX(-${100 - progress}%)` }}
-          />
-        </Progress.Root>
+      <div className="mb-6 px-2">
+        <div className="p-4 bg-gray-50 rounded-[24px]">
+          <Progress.Root className="relative overflow-hidden bg-white rounded-full w-full h-4 border border-gray-100/50">
+            <Progress.Indicator
+              className="bg-primary w-full h-full transition-transform duration-700 ease-out"
+              style={{ transform: `translateX(-${100 - progress}%)` }}
+            />
+          </Progress.Root>
+        </div>
       </div>
 
-      {/* Question Card */}
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col px-2">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIdx}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="card p-10 min-h-[300px] flex flex-col items-center justify-center text-center mb-8 relative border-none shadow-none bg-primary rounded-[56px]"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="flex-[1.5] p-10 flex flex-col items-center justify-center text-center mb-6 bg-primary rounded-[64px] shadow-2xl border-8 border-white min-h-[40vh]"
           >
-            <h3 className="text-4xl font-black leading-[1.4] text-gray-900 break-keep">
+            <h3 className="text-5xl font-black leading-[1.3] text-gray-900 break-keep">
               {PHQ9_QUESTIONS[currentIdx]}
             </h3>
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 h-2 bg-gray-900/10 rounded-full" />
           </motion.div>
         </AnimatePresence>
 
-        {/* Options */}
-        <div className="space-y-4">
+        <div className="flex-1 space-y-4">
           {OPTIONS.map((opt, idx) => (
             <motion.button
               key={idx}
               whileTap={{ scale: 0.98 }}
               onClick={() => setSelected(opt.score)}
-              className={`w-full p-5 text-left rounded-[32px] border-2 transition-all flex items-center gap-4 group ${selected === opt.score
-                  ? 'bg-primary border-primary shadow-xl shadow-primary/20'
-                  : 'bg-white border-gray-100 hover:border-gray-300'
+              className={`w-full p-7 text-left rounded-[40px] border-4 transition-all flex items-center gap-6 group ${selected === opt.score
+                  ? 'bg-gray-900 border-gray-900 shadow-2xl'
+                  : 'bg-white border-gray-100'
                 }`}
             >
               <div className="flex-1">
-                <span className={`text-xl font-black leading-tight block ${selected === opt.score ? 'text-white' : 'text-gray-900'}`}>
+                <span className={`text-3xl font-black leading-tight block ${selected === opt.score ? 'text-white' : 'text-gray-900'}`}>
                   {opt.label}
                 </span>
               </div>
 
-              {/* Check Indicator */}
-              <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${selected === opt.score
-                  ? 'bg-white/20 border-white/40'
-                  : 'bg-gray-50 border-gray-100 group-hover:border-gray-200'
+              <div className={`w-14 h-14 rounded-full border-4 flex items-center justify-center transition-all ${selected === opt.score
+                  ? 'bg-primary border-primary'
+                  : 'bg-gray-50 border-gray-100'
                 }`}>
-                {selected === opt.score && <CheckCircle2 size={16} className="text-white" />}
+                {selected === opt.score && <CheckCircle2 size={32} className="text-gray-900" />}
               </div>
             </motion.button>
           ))}
         </div>
       </div>
 
-      {/* Footer Navigation */}
-      <footer className="mt-8">
+      <footer className="mt-8 pb-4 px-2">
         <button
           onClick={handleNext}
           disabled={selected === null}
-          className={`w-full py-6 rounded-[32px] font-black text-xl flex items-center justify-center gap-3 transition-all ${selected !== null
-              ? 'bg-gray-900 text-white shadow-2xl shadow-gray-200'
               : 'bg-gray-100 text-gray-400'
             }`}
         >

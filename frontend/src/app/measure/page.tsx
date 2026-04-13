@@ -272,20 +272,21 @@ export default function MeasurePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto relative overflow-hidden">
+    <main className="min-h-screen bg-gray-900 flex flex-col max-w-md mx-auto relative overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div 
           key="measure"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           className="flex-1 flex flex-col"
         >
-          <header className="p-8 flex justify-between items-center text-gray-900 sticky top-0 z-10 bg-gray-50/80 backdrop-blur-md">
-            <button onClick={() => router.back()} className="p-3 bg-white rounded-2xl shadow-sm text-gray-400 hover:text-gray-900 transition-all ring-1 ring-gray-100">
-              <ArrowLeft size={24} />
+          {/* Transparent Header Over Video */}
+          <header className="p-6 flex justify-between items-center text-white absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/60 to-transparent">
+            <button onClick={() => router.back()} className="p-4 bg-white/10 backdrop-blur-md rounded-[24px] text-white shadow-xl active:scale-95 transition-all outline-none">
+              <ArrowLeft size={36} />
             </button>
-            <h1 className="text-2xl font-black">심박 신호 측정</h1>
-            <div className="w-12 h-12" />
+            <h1 className="text-3xl font-black tracking-tight">마음 측정</h1>
+            <div className="w-14 h-14" />
           </header>
 
             <div className="flex-1 px-8 py-4 flex flex-col items-center">
