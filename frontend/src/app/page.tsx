@@ -29,7 +29,7 @@ export default function Home() {
       </header>
 
       {/* Options Section (Single Large Card) */}
-      <section className="px-6 pb-20 pt-8">
+      <section className="px-6 pb-12 pt-4">
         <motion.div
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
@@ -37,24 +37,24 @@ export default function Home() {
         >
           <button 
             onClick={() => handleStart('3')} 
-            className="w-full relative overflow-hidden group bg-primary rounded-[40px] aspect-[2/2.8] p-8 shadow-2xl active:scale-[0.98] transition-all text-left flex flex-col justify-between"
+            className="w-full relative overflow-hidden group bg-primary rounded-[60px] aspect-[2/3] p-12 shadow-2xl active:scale-[0.98] transition-all text-left flex flex-col justify-between border-8 border-white/50"
           >
-            <div className="relative z-10 pt-4">
-              <div className="space-y-4">
-                <h3 className="text-4xl font-black text-gray-900 leading-[1.1] tracking-tighter">
+            <div className="relative z-10 pt-10">
+              <div className="space-y-8">
+                <h3 className="text-7xl font-black text-gray-900 leading-[1] tracking-tighter">
                   마음 이음
                 </h3>
-                <div className="w-12 h-1 bg-gray-900/20 rounded-full" />
-                <p className="text-gray-900/80 font-bold text-base leading-relaxed">
+                <div className="w-24 h-3 bg-gray-900/20 rounded-full" />
+                <p className="text-gray-900 font-black text-3xl leading-relaxed">
                   마음보기의 시작
                 </p>
               </div>
             </div>
 
             <div className="relative z-10 flex items-center group">
-              <div className="flex items-center gap-3 text-gray-900 font-black text-lg bg-white/40 backdrop-blur-md px-5 py-3.5 rounded-full border border-white/20">
+              <div className="flex items-center gap-6 text-gray-900 font-black text-3xl bg-white px-10 py-6 rounded-full shadow-2xl">
                  <span>지금 시작</span>
-                 <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
+                 <ArrowRight size={36} className="group-hover:translate-x-4 transition-transform" />
               </div>
             </div>
           </button>

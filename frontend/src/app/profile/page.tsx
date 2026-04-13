@@ -58,37 +58,37 @@ export default function ProfilePage() {
 
           <section className="flex-1 space-y-8">
             {/* Gender Selection */}
-            <div className="space-y-3">
-              <p className="text-gray-900 font-black text-sm ml-1">성별을 선택해 주세요</p>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-6">
+              <p className="text-gray-900 font-extrabold text-2xl ml-1">성별을 선택하세요</p>
+              <div className="grid grid-cols-2 gap-6">
                 <button 
                   onClick={() => setGender(0)}
-                  className={`p-6 rounded-[32px] border-2 transition-all flex flex-col items-center gap-3 ${gender === 0 ? 'border-primary bg-primary/20 shadow-lg' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-400'}`}
+                  className={`p-10 rounded-[48px] border-4 transition-all flex flex-col items-center gap-4 ${gender === 0 ? 'border-primary bg-primary/20 shadow-2xl scale-[1.02]' : 'border-gray-100 bg-white text-gray-400'}`}
                 >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${gender === 0 ? 'bg-primary text-gray-900 shadow-sm' : 'bg-gray-100'}`}>
-                     <User size={24} className={gender === 0 ? '' : 'text-gray-600'} />
+                  <div className={`w-20 h-20 rounded-2xl flex items-center justify-center transition-all ${gender === 0 ? 'bg-primary text-gray-900 shadow-md' : 'bg-gray-100'}`}>
+                     <User size={40} className={gender === 0 ? '' : 'text-gray-400'} />
                   </div>
-                  <span className={`text-lg font-black text-gray-900`}>남성</span>
+                  <span className="text-3xl font-black text-gray-900">남성</span>
                 </button>
                 <button 
                   onClick={() => setGender(1)}
-                  className={`p-8 rounded-[40px] border-2 transition-all flex flex-col items-center gap-4 ${gender === 1 ? 'border-primary bg-primary/20 shadow-xl' : 'border-gray-100 bg-white hover:border-gray-200 text-gray-400'}`}
+                  className={`p-10 rounded-[48px] border-4 transition-all flex flex-col items-center gap-4 ${gender === 1 ? 'border-primary bg-primary/20 shadow-2xl scale-[1.02]' : 'border-gray-100 bg-white text-gray-400'}`}
                 >
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all ${gender === 1 ? 'bg-primary text-gray-900 shadow-md' : 'bg-gray-100'}`}>
-                     <UserRound size={32} className={gender === 1 ? '' : 'text-gray-600'} />
+                  <div className={`w-20 h-20 rounded-2xl flex items-center justify-center transition-all ${gender === 1 ? 'bg-primary text-gray-900 shadow-md' : 'bg-gray-100'}`}>
+                     <UserRound size={40} className={gender === 1 ? '' : 'text-gray-400'} />
                   </div>
-                  <span className={`text-xl font-black text-gray-900`}>여성</span>
+                  <span className="text-3xl font-black text-gray-900">여성</span>
                 </button>
               </div>
             </div>
 
             {/* Age Selection */}
-            <div className="space-y-4">
-              <p className="text-gray-900 font-black text-lg ml-1 tracking-tight">나이를 입력해 주세요</p>
-              <div className="bg-white rounded-[40px] p-6 border-2 border-gray-100 shadow-sm flex items-center justify-between">
+            <div className="space-y-6">
+              <p className="text-gray-900 font-extrabold text-2xl ml-1">나이를 누르세요</p>
+              <div className="bg-white rounded-[48px] p-10 border-4 border-gray-100 shadow-xl flex items-center justify-between">
                 <button 
                   onClick={() => setAge(Math.max(1, age - 1))}
-                  className="w-16 h-16 rounded-[24px] bg-gray-50 flex items-center justify-center text-gray-900 font-black text-3xl active:scale-90 transition-all hover:bg-primary/20"
+                  className="w-24 h-24 rounded-[32px] bg-gray-100 flex items-center justify-center text-gray-900 font-black text-5xl active:scale-90 transition-all hover:bg-primary/30"
                 >
                   -
                 </button>
@@ -99,15 +99,14 @@ export default function ProfilePage() {
                     onChange={(e) => {
                       const val = parseInt(e.target.value);
                       if (!isNaN(val)) setAge(Math.min(120, Math.max(1, val)));
-                      else if (e.target.value === '') setAge('' as any);
                     }}
-                    className="w-24 bg-transparent text-6xl font-black text-gray-900 text-center focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-32 bg-transparent text-8xl font-black text-gray-900 text-center focus:outline-none"
                   />
-                  <span className="text-xl font-black text-gray-600">세</span>
+                  <p className="text-2xl font-black text-gray-400 mt-2">살</p>
                 </div>
                 <button 
                   onClick={() => setAge(Math.min(120, age + 1))}
-                  className="w-16 h-16 rounded-[24px] bg-gray-50 flex items-center justify-center text-gray-900 font-black text-3xl active:scale-90 transition-all hover:bg-primary/20"
+                  className="w-24 h-24 rounded-[32px] bg-gray-100 flex items-center justify-center text-gray-900 font-black text-5xl active:scale-90 transition-all hover:bg-primary/30"
                 >
                   +
                 </button>
@@ -115,14 +114,13 @@ export default function ProfilePage() {
             </div>
           </section>
 
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button 
             onClick={handleComplete}
-            className="w-full py-6 bg-primary text-white rounded-[28px] text-xl font-black shadow-premium mt-8 flex justify-center gap-2"
+            className="w-full h-28 bg-primary text-gray-900 rounded-[48px] text-3xl font-black shadow-2xl mt-8 flex items-center justify-center gap-4 active:scale-[0.98] transition-all"
           >
-            입력 완료하고 다음으로
-          </motion.button>
+            입력 완료
+            <ArrowRight size={36} />
+          </button>
         </motion.div>
       </AnimatePresence>
     </main>

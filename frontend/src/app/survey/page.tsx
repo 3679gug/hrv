@@ -167,22 +167,22 @@ export default function SurveyPage() {
   const progress = ((currentIdx + 1) / PHQ9_QUESTIONS.length) * 100;
 
   return (
-    <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-6 font-sans">
+    <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-10 font-sans">
       {/* Header */}
-      <header className="flex justify-between items-center mb-6">
-        <button onClick={() => router.back()} className="p-3 rounded-2xl bg-gray-50 text-gray-400 hover:text-primary transition-colors">
-          <ArrowLeft size={24} />
+      <header className="flex justify-between items-center mb-8">
+        <button onClick={() => router.back()} className="p-4 rounded-[24px] bg-gray-50 text-gray-500 hover:text-primary transition-all shadow-md ring-2 ring-gray-100">
+          <ArrowLeft size={32} />
         </button>
-        <h1 className="text-xl font-black text-gray-900">마음 건강 설문</h1>
+        <h1 className="text-3xl font-black text-gray-900 tracking-tight">마음 설문</h1>
         <button 
            onClick={() => {
              const newState = !isVoiceEnabled;
              setIsVoiceEnabled(newState);
              if (!newState) stopAudio();
            }}
-           className={`p-3 rounded-2xl transition-all duration-300 shadow-sm ${isVoiceEnabled ? 'bg-primary text-gray-900 scale-105 shadow-primary/40' : 'bg-gray-100 text-gray-300'}`}
+           className={`p-4 rounded-[24px] transition-all duration-300 shadow-lg ${isVoiceEnabled ? 'bg-primary text-gray-900 scale-110 shadow-primary/30' : 'bg-gray-100 text-gray-400'}`}
         >
-          {isVoiceEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
+          {isVoiceEnabled ? <Volume2 size={32} /> : <VolumeX size={32} />}
         </button>
       </header>
 

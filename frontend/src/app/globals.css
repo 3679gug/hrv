@@ -30,15 +30,15 @@ body {
 
 /* Common Mobile Container Scaling */
 main, .mobile-container {
-  max-width: 480px !important;
+  max-width: 540px !important;
   margin-left: auto !important;
   margin-right: auto !important;
   min-height: 100vh;
-  box-shadow: 0 0 50px rgba(0,0,0,0.02);
+  box-shadow: 0 0 50px rgba(0,0,0,0.05);
 }
 
 .card {
-  @apply bg-white rounded-3xl p-6 shadow-sm border border-gray-100;
+  @apply bg-white rounded-[40px] p-8 shadow-md border border-gray-100;
 }
 
 .btn-primary {
