@@ -45,7 +45,8 @@ export default function MeasurePage() {
   // Force rebuild for environment variable sync: 2026-04-10
   const TARGET_FRAMES = 900; // 30 seconds at 30fps
   // BACKEND_URL을 직접 지정하여 환경 변수 누락 및 포트 점유로 인한 404 방지
-  const API_URL = "http://127.0.0.1:8002/analyze";
+  const BACKEND_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8002";
+  const API_URL = `${BACKEND_BASE}/analyze`;
   const ROI_FOREHEAD = [10, 338, 297, 332, 284, 251, 67, 109];
   const ROI_CHEEKS = [118, 119, 100, 120, 121, 116, 117, 347, 348, 329, 349, 350, 345, 346];
 

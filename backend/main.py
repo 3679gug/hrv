@@ -31,6 +31,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+
 class AnalyzeRequest(BaseModel):
     rgb_means: List[List[float]]
     gender: int = 0 # 0: male, 1: female
@@ -69,6 +76,45 @@ def analyze(data: AnalyzeRequest):
         raise HTTPException(status_code=400, detail=result["error"])
     
     return result
+
+@app.post("/chat")
+def chat(data: ChatRequest):
+    """OpenAI 기반 어르신 맞춤형 상담 챗봇"""
+    try:
+        # 시스템 프롬프트 추가
+        system_prompt = {
+            "role": "system",
+            "content": "너는 어르신의 건강을 돌보는 따뜻하고 친절한 '마음 선생님'이야. 어르신이 이해하기 쉽게 천천히, 다정한 말투로 대답해줘. 공감을 많이 해드리고 가끔은 '수고하셨어요', '좋은 날이에요' 같은 칭찬도 섞어줘. 답변은 2-3문장 정도로 짧고 명확하게 해줘."
+        }
+        
+        # 메시지 구성
+        openai_messages = [system_prompt] + [{"role": m.role, "content": m.content} for m in data.messages]
+        
+        # 1. 텍스트 응답 생성
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=openai_messages,
+            max_tokens=200
+        )
+        reply = response.choices[0].message.content
+        
+        # 2. TTS 생성 (Shimmer 목소리 고정)
+        import base64
+        tts_res = client.audio.speech.create(
+            model="tts-1",
+            voice="shimmer",
+            input=reply
+        )
+        audio_base64 = base64.b64encode(tts_res.content).decode("utf-8")
+        
+        return {
+            "reply": reply,
+            "audio_base64": audio_base64,
+            "suggested_choices": [] # 추후 필요시 추가
+        }
+    except Exception as e:
+        print(f"Chat Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/tts")
 async def tts(
