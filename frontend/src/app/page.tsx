@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, User, Sparkles, Heart, ClipboardCheck, ArrowRight } from 'lucide-react';
+import { ChevronLeft, User, Sparkles, Heart, ClipboardCheck, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import { useRouter } from 'next/navigation';
@@ -19,8 +19,8 @@ export default function Home() {
     <main className="min-h-screen bg-background text-foreground pb-12 max-w-md mx-auto relative overflow-hidden">
       {/* Header - 제목 제거 */}
       <header className="p-8 flex justify-between items-center bg-background sticky top-0 z-10 bg-opacity-80 backdrop-blur-md">
-        <button className="p-2 rounded-full text-gray-900 hover:bg-gray-100 transition-colors">
-          <ArrowLeft size={24} />
+        <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full text-gray-900 hover:bg-gray-100 transition-colors">
+          <ChevronLeft size={32} strokeWidth={3} />
         </button>
         <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm">
           <User className="w-full h-full p-2 text-gray-400" />
