@@ -65,18 +65,24 @@ export default function SurveyPage() {
 
     try {
       const text = PHQ9_QUESTIONS[index];
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001";
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8002";
       const url = `${backendUrl}/tts?text=${encodeURIComponent(text)}&voice=${voice}&t=${Date.now()}`;
       
-      const response = await fetch(url);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5초 타임아웃
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
       if (response.ok) {
         const blob = await response.blob();
         const objectUrl = URL.createObjectURL(blob);
         blobCacheRef.current[cacheKey] = objectUrl;
         console.log(`[TTS] Preloaded question ${index + 1}`);
       }
-    } catch (e) {
-      console.error(`[TTS] Preload error for ${cacheKey}:`, e);
+    } catch (e: any) {
+      // 배포 환경에서 백엔드 미연결 시 조용히 skip (화면 동작에는 영향 없음)
+      if (e.name !== 'AbortError') {
+        console.warn(`[TTS] Backend unreachable, skipping audio preload for question ${index + 1}`);
+      }
     }
   };
 
