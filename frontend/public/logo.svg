@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" fill="none">
+  <!-- Blue left loop -->
+  <ellipse cx="65" cy="50" rx="38" ry="26" fill="none" stroke="#2563EB" stroke-width="18" stroke-linecap="round"/>
+  <!-- Yellow/gold right loop -->
+  <ellipse cx="135" cy="50" rx="38" ry="26" fill="none" stroke="#FBBF24" stroke-width="18" stroke-linecap="round"/>
+  <!-- Blue overlay on right-inner crossing -->
+  <path d="M100 38 Q115 50 100 62" stroke="#2563EB" stroke-width="18" fill="none" stroke-linecap="round"/>
+  <!-- Yellow overlay on left-inner crossing -->
+  <path d="M100 38 Q85 50 100 62" stroke="#FBBF24" stroke-width="18" fill="none" stroke-linecap="round"/>
+</svg>

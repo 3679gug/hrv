@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Share2, Clipboard, Heart, Sun, Wind, ChevronRight, MessageSquare, Home, Sparkles, User, Activity, Zap, TrendingUp } from 'lucide-react';
+import { ChevronLeft, Share2, Clipboard, Heart, Sun, Wind, ChevronRight, MessageSquare, Home, Sparkles, User, Activity, Zap, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function ResultsPage() {
@@ -135,8 +135,8 @@ export default function ResultsPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto relative pb-96">
       {/* Header */}
       <header className="p-8 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-40 text-gray-900">
-        <button onClick={() => router.back()} className="p-3 bg-white rounded-2xl shadow-sm text-gray-400 hover:text-gray-900 transition-all ring-1 ring-gray-100">
-          <ArrowLeft className="w-6 h-6" />
+        <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all">
+          <ChevronLeft className="w-6 h-6 text-white" strokeWidth={3} />
         </button>
         <h1 className="text-2xl font-black">오늘의 상태</h1>
         <button className="p-3 bg-white rounded-2xl shadow-sm text-gray-400">

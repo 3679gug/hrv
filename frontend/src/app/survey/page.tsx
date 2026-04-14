@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, User, CheckCircle2, ChevronRight, Activity, Mic, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, User, CheckCircle2, ChevronRight, Activity, Mic, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as Progress from '@radix-ui/react-progress';
 
@@ -174,8 +174,8 @@ export default function SurveyPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-2 font-sans overflow-hidden">
       <header className="flex justify-between items-center py-4 px-3 sticky top-0 bg-white z-20">
-        <button onClick={() => router.back()} className="p-4 rounded-[28px] bg-gray-50 text-gray-500 hover:text-primary transition-all shadow-md active:scale-95 outline-none">
-          <ArrowLeft size={42} />
+        <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all outline-none">
+          <ChevronLeft size={26} className="text-white" strokeWidth={3} />
         </button>
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">설문</h1>
         <button 

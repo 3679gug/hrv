@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Webcam from 'react-webcam';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, MoreVertical, Heart, Activity, User, UserRound, Zap, Sparkles, BrainCircuit, Loader2 } from 'lucide-react';
+import { ChevronLeft, MoreVertical, Heart, Activity, User, UserRound, Zap, Sparkles, BrainCircuit, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as Progress from '@radix-ui/react-progress';
 import axios from 'axios';
@@ -283,8 +283,8 @@ export default function MeasurePage() {
         >
           {/* Header */}
           <header className="p-6 flex justify-between items-center text-gray-900 absolute top-0 left-0 right-0 z-50">
-            <button onClick={() => router.back()} className="p-4 bg-gray-100 rounded-[24px] text-gray-900 shadow-sm active:scale-95 transition-all outline-none">
-              <ArrowLeft size={36} />
+            <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all outline-none">
+              <ChevronLeft size={26} className="text-white" strokeWidth={3} />
             </button>
             <div className="w-14 h-14" />
           </header>

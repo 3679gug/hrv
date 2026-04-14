@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Volume2, VolumeX, UserRound, User, Sparkles, ArrowLeft } from 'lucide-react';
+import { Volume2, VolumeX, UserRound, User, Sparkles, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function VoiceSetupPage() {
@@ -61,8 +61,8 @@ export default function VoiceSetupPage() {
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto relative overflow-hidden p-6 font-sans">
       <header className="flex justify-between items-center mb-8 relative z-10 pt-4">
-        <button onClick={() => router.back()} className="p-3 bg-white rounded-2xl shadow-sm text-gray-400 hover:text-primary transition-all ring-1 ring-gray-100">
-          <ArrowLeft size={24} />
+        <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all">
+          <ChevronLeft size={26} className="text-white" strokeWidth={3} />
         </button>
         <div className="flex flex-col items-center">
         </div>

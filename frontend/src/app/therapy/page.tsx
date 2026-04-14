@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, Volume2, VolumeX, MessageCircle, Heart, ArrowLeft, TrendingUp, Sparkles, Plus, Star, MapPin, Trash2, Check, ChevronRight, ChevronLeft, Phone } from 'lucide-react';
+import Image from 'next/image';
+import { Home, Volume2, VolumeX, MessageCircle, Heart, TrendingUp, Sparkles, Plus, Star, MapPin, Trash2, Check, ChevronRight, ChevronLeft, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Choice {
@@ -45,11 +46,11 @@ interface ScheduledActivity {
 }
 
 const ACTIVITY_BANK = [
-  { name: '산책', emoji: '🚶' }, { name: '독서', emoji: '📚' },
-  { name: '음악감상', emoji: '🎵' }, { name: '요리', emoji: '🍳' },
-  { name: '스트레칭', emoji: '🧘' }, { name: '일기쓰기', emoji: '✏️' },
-  { name: '영화감상', emoji: '🎬' }, { name: '친구연락', emoji: '📱' },
-  { name: '명상', emoji: '🌿' }, { name: '그림그리기', emoji: '🎨' },
+  { name: '산책' }, { name: '독서' },
+  { name: '음악감상' }, { name: '요리' },
+  { name: '스트레칭' }, { name: '일기쓰기' },
+  { name: '영화감상' }, { name: '친구연락' },
+  { name: '명상' }, { name: '그림그리기' },
 ];
 
 export default function TherapyPage() {
@@ -336,7 +337,7 @@ export default function TherapyPage() {
               </div>
             </div>
             <p className="text-sm font-bold text-gray-400 text-center leading-relaxed">
-              {avgScore >= 7 ? '😊 전반적으로 아주 안정적인 상태입니다.' : avgScore >= 4 ? '😐 기분 전환을 위해 오늘 추천 활동을 해보세요.' : '😔 마음이음과 더 깊은 대화가 필요한 시간이에요.'}
+              {avgScore >= 7 ? '전반적으로 아주 안정적인 상태입니다.' : avgScore >= 4 ? '기분 전환을 위해 오늘 추천 활동을 해보세요.' : '마음이음과 더 깊은 대화가 필요한 시간이에요.'}
             </p>
           </div>
         </div>
@@ -383,8 +384,8 @@ export default function TherapyPage() {
 
           <div className="flex flex-wrap gap-2">
             {ACTIVITY_BANK.map((act, i) => (
-              <button key={i} className="px-4 py-2.5 bg-gray-50 rounded-2xl text-xs font-bold text-gray-600 hover:bg-primary/20 active:scale-95 transition-all flex items-center gap-2">
-                <span>{act.emoji}</span> {act.name}
+              <button key={i} className="px-4 py-2.5 bg-gray-50 rounded-2xl text-xs font-bold text-gray-600 hover:bg-primary/20 active:scale-95 transition-all">
+                {act.name}
               </button>
             ))}
             <button className="w-10 h-10 border-2 border-dashed border-primary-dark rounded-2xl flex items-center justify-center text-primary-dark"><Plus size={18} /></button>
@@ -417,7 +418,7 @@ export default function TherapyPage() {
 
         {/* 감사 일기 */}
         <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm space-y-6">
-          <h3 className="font-black text-gray-900 text-lg">📔 감사 일기</h3>
+          <h3 className="font-black text-gray-900 text-lg">감사 일기</h3>
           <div className="space-y-4">
             <textarea
               value={gratitudeInput}
@@ -461,7 +462,7 @@ export default function TherapyPage() {
           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[48px] p-10 w-full max-w-sm text-center shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
-              <h3 className="text-2xl font-black text-gray-900 mb-2">활동 완료! 🎉</h3>
+              <h3 className="text-2xl font-black text-gray-900 mb-2">활동 완료!</h3>
               <p className="text-sm font-bold text-gray-400 mb-8">활동 후 기분은 어떠신가요?</p>
               <div className="space-y-6 mb-10">
                 <div className="flex justify-between text-[10px] font-black text-gray-300 uppercase tracking-widest px-2">
@@ -493,13 +494,13 @@ export default function TherapyPage() {
                 onClick={() => setSelectedSession('morning')}
                 className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'morning' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
               >
-                <span>☀️</span> 아침 세션
+                아침 세션
               </button>
               <button
                 onClick={() => setSelectedSession('evening')}
                 className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'evening' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
               >
-                <span>🌙</span> 저녁 세션
+                저녁 세션
               </button>
             </div>
           </div>
@@ -512,14 +513,14 @@ export default function TherapyPage() {
                 className="flex-1 flex flex-col items-center justify-start gap-10 pt-10 pb-32"
               >
                 <div className="relative">
-                  <div className="w-56 h-56 bg-primary rounded-[70px] flex items-center justify-center shadow-2xl rotate-3 border-8 border-white/50">
-                    <div className="text-8xl -rotate-3">🤖</div>
+                  <div className="w-56 h-56 bg-white rounded-[70px] flex items-center justify-center shadow-2xl rotate-3 border-8 border-primary/20">
+                    <Image src="/logo.svg" alt="마음이음 로고" width={160} height={80} className="-rotate-3 object-contain" />
                   </div>
                   <motion.div animate={{ scale: [1, 1.4], opacity: [0.6, 0] }} transition={{ duration: 2.5, repeat: Infinity }} className="absolute inset-0 border-4 border-primary rounded-full -z-10" />
                 </div>
                 <div className="text-center space-y-4 px-8">
-                  <h2 className="text-5xl font-black text-gray-900 leading-[1.1] tracking-tighter">마음이음과<br />대화하기</h2>
-                  <p className="text-[22px] text-gray-900/60 font-bold leading-relaxed px-4">어르신의 마음을 따뜻하게<br />들어주는 대화가 준비되었습니다.</p>
+                  <h2 className="text-4xl font-black text-gray-900 leading-[1.1] tracking-tighter">마음이음과<br />대화하기</h2>
+                  <p className="text-xl text-gray-900/60 font-bold leading-relaxed px-4">어르신의 마음을 따뜻하게<br />들어주는 대화가 준비되었습니다.</p>
                 </div>
                 <footer className="px-6 py-10 w-full mt-auto">
                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={startSession}
@@ -575,8 +576,8 @@ export default function TherapyPage() {
       ) : (
         <div className="flex-1 flex flex-col h-full">
           <header className="flex justify-between items-center py-6 px-8 sticky top-0 bg-white/80 backdrop-blur-md z-30">
-            <button onClick={() => setSessionStarted(false)} className="p-4 rounded-[24px] bg-white shadow-sm text-gray-900 border border-gray-100 active:scale-95">
-              <ArrowLeft size={28} />
+            <button onClick={() => setSessionStarted(false)} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all">
+              <ChevronLeft size={26} className="text-white" strokeWidth={3} />
             </button>
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black tracking-tight">마음이음</span>
