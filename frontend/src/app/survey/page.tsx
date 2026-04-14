@@ -174,8 +174,8 @@ export default function SurveyPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-2 font-sans overflow-hidden">
       <header className="flex justify-between items-center py-4 px-3 sticky top-0 bg-white z-20">
-        <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all outline-none">
-          <ChevronLeft size={26} className="text-white" strokeWidth={3} />
+        <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all outline-none">
+          <ChevronLeft size={32} className="text-blue-600" strokeWidth={3} />
         </button>
         <h1 className="text-3xl font-black text-gray-900 tracking-tight">설문</h1>
         <button 

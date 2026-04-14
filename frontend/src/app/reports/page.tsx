@@ -186,8 +186,8 @@ export default function ReportsPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto relative pb-32 font-sans overflow-x-hidden">
       <header className="px-6 pt-10 pb-6 flex items-center justify-between sticky top-0 z-20 bg-gray-50/90 backdrop-blur-md">
-        <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all">
-           <ChevronLeft size={26} className="text-white" strokeWidth={3} />
+        <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all">
+           <ChevronLeft size={32} className="text-blue-600" strokeWidth={3} />
         </button>
         <h1 className="text-2xl font-black text-gray-900 tracking-tight">그동안의 건강 변화</h1>
         <button className="p-3 bg-white rounded-2xl shadow-sm text-gray-400">

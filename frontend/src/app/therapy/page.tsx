@@ -513,10 +513,9 @@ export default function TherapyPage() {
                 className="flex-1 flex flex-col items-center justify-start gap-10 pt-10 pb-32"
               >
                 <div className="relative">
-                  <div className="w-56 h-56 bg-white rounded-[70px] flex items-center justify-center shadow-2xl rotate-3 border-8 border-primary/20">
-                    <Image src="/logo.svg" alt="마음이음 로고" width={160} height={80} className="-rotate-3 object-contain" />
+                  <div className="w-56 h-56 flex items-center justify-center">
+                    <Image src="/logo.svg" alt="마음이음 로고" width={200} height={100} className="object-contain" />
                   </div>
-                  <motion.div animate={{ scale: [1, 1.4], opacity: [0.6, 0] }} transition={{ duration: 2.5, repeat: Infinity }} className="absolute inset-0 border-4 border-primary rounded-full -z-10" />
                 </div>
                 <div className="text-center space-y-4 px-8">
                   <h2 className="text-4xl font-black text-gray-900 leading-[1.1] tracking-tighter">마음이음과<br />대화하기</h2>
@@ -576,8 +575,8 @@ export default function TherapyPage() {
       ) : (
         <div className="flex-1 flex flex-col h-full">
           <header className="flex justify-between items-center py-6 px-8 sticky top-0 bg-white/80 backdrop-blur-md z-30">
-            <button onClick={() => setSessionStarted(false)} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all">
-              <ChevronLeft size={26} className="text-white" strokeWidth={3} />
+            <button onClick={() => setSessionStarted(false)} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all">
+              <ChevronLeft size={32} className="text-blue-600" strokeWidth={3} />
             </button>
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black tracking-tight">마음이음</span>

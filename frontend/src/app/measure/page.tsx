@@ -283,8 +283,8 @@ export default function MeasurePage() {
         >
           {/* Header */}
           <header className="p-6 flex justify-between items-center text-gray-900 absolute top-0 left-0 right-0 z-50">
-            <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-2xl shadow-lg active:scale-95 transition-all outline-none">
-              <ChevronLeft size={26} className="text-white" strokeWidth={3} />
+            <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all outline-none">
+              <ChevronLeft size={32} className="text-blue-600" strokeWidth={3} />
             </button>
             <div className="w-14 h-14" />
           </header>
