@@ -136,7 +136,7 @@ export default function ResultsPage() {
       {/* Header */}
       <header className="p-8 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-40 text-gray-900">
         <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all">
-          <ChevronLeft size={32} className="text-blue-600" strokeWidth={3} />
+          <ChevronLeft size={32} className="text-gray-900" strokeWidth={3} />
         </button>
         <h1 className="text-2xl font-black">오늘의 상태</h1>
         <button className="p-3 bg-white rounded-2xl shadow-sm text-gray-400">

@@ -62,7 +62,7 @@ export default function VoiceSetupPage() {
     <main className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto relative overflow-hidden p-6 font-sans">
       <header className="flex justify-between items-center mb-8 relative z-10 pt-4">
         <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all">
-          <ChevronLeft size={32} className="text-blue-600" strokeWidth={3} />
+          <ChevronLeft size={32} className="text-gray-900" strokeWidth={3} />
         </button>
         <div className="flex flex-col items-center">
         </div>

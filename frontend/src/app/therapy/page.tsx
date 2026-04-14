@@ -512,9 +512,9 @@ export default function TherapyPage() {
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="flex-1 flex flex-col items-center justify-start gap-10 pt-10 pb-32"
               >
-                <div className="relative">
-                  <div className="w-56 h-56 flex items-center justify-center">
-                    <Image src="/logo.svg" alt="마음이음 로고" width={200} height={100} className="object-contain" />
+                <div className="flex flex-col items-center">
+                  <div className="w-80 h-48 flex items-center justify-center -mb-4">
+                    <Image src="/logo.svg" alt="마음이음 로고" width={320} height={160} className="object-contain" priority />
                   </div>
                 </div>
                 <div className="text-center space-y-4 px-8">
@@ -576,7 +576,7 @@ export default function TherapyPage() {
         <div className="flex-1 flex flex-col h-full">
           <header className="flex justify-between items-center py-6 px-8 sticky top-0 bg-white/80 backdrop-blur-md z-30">
             <button onClick={() => setSessionStarted(false)} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all">
-              <ChevronLeft size={32} className="text-blue-600" strokeWidth={3} />
+              <ChevronLeft size={32} className="text-gray-900" strokeWidth={3} />
             </button>
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black tracking-tight">마음이음</span>

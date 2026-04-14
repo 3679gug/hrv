@@ -46,7 +46,7 @@ export default function ProfilePage() {
         >
           <header className="mb-8">
             <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all mb-4">
-              <ChevronLeft size={32} className="text-blue-600" strokeWidth={3} />
+              <ChevronLeft size={32} className="text-gray-900" strokeWidth={3} />
             </button>
             <div className="space-y-2">
               <h1 className="text-2xl font-black text-gray-900 leading-tight">
