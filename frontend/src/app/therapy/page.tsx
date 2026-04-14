@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, Volume2, VolumeX, MessageCircle, Heart, ArrowLeft, TrendingUp, Sparkles, Plus, Calendar, Star, MapPin, Trash2, Check, Clock, ChevronRight, ChevronLeft, Phone } from 'lucide-react';
+import { Home, Volume2, VolumeX, MessageCircle, Heart, ArrowLeft, TrendingUp, Sparkles, Plus, Star, MapPin, Trash2, Check, ChevronRight, ChevronLeft, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Choice {
@@ -45,11 +45,11 @@ interface ScheduledActivity {
 }
 
 const ACTIVITY_BANK = [
-  { name: '?�책', emoji: '?��' }, { name: '?�서', emoji: '?��' },
-  { name: '?�악감상', emoji: '?��' }, { name: '?�리', emoji: '?��' },
-  { name: '?�트?�칭', emoji: '?��' }, { name: '?�기?�기', emoji: '?�️' },
-  { name: '?�화감상', emoji: '?��' }, { name: '친구?�락', emoji: '?��' },
-  { name: '명상', emoji: '?��' }, { name: '그림그리�?, emoji: '?��' },
+  { name: '산책', emoji: '🚶' }, { name: '독서', emoji: '📚' },
+  { name: '음악감상', emoji: '🎵' }, { name: '요리', emoji: '🍳' },
+  { name: '스트레칭', emoji: '🧘' }, { name: '일기쓰기', emoji: '✏️' },
+  { name: '영화감상', emoji: '🎬' }, { name: '친구연락', emoji: '📱' },
+  { name: '명상', emoji: '🌿' }, { name: '그림그리기', emoji: '🎨' },
 ];
 
 export default function TherapyPage() {
@@ -60,13 +60,12 @@ export default function TherapyPage() {
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [suggestedChoices, setSuggestedChoices] = useState<Choice[]>([]);
   const [activeTab, setActiveTab] = useState<'therapy' | 'record' | 'activity'>('therapy');
-  
+
   // Data States
   const [userRecords, setUserRecords] = useState<Session[]>([]);
   const [gratitudeEntries, setGratitudeEntries] = useState<GratitudeEntry[]>([]);
   const [scheduledActivities, setScheduledActivities] = useState<ScheduledActivity[]>([]);
-  const [customActivities, setCustomActivities] = useState<any[]>([]);
-  
+
   // UI States
   const [ledgerWeek, setLedgerWeek] = useState(1);
   const [gratitudeInput, setGratitudeInput] = useState('');
@@ -79,18 +78,16 @@ export default function TherapyPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8002";
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8002';
 
-  // Helper: Get Date Key (YYYY-MM-DD)
   const getDateKey = (date: Date | number | string) => {
     const d = new Date(date);
-    if (isNaN(d.getTime())) return "";
+    if (isNaN(d.getTime())) return '';
     return d.toISOString().split('T')[0];
   };
 
-  // Helper: Get Program Start Monday
   const getProgramStart = (sessions: Session[]) => {
-    const firstDate = sessions.length > 0 ? new Date(sessions[sessions.length-1].id) : new Date();
+    const firstDate = sessions.length > 0 ? new Date(sessions[sessions.length - 1].id) : new Date();
     const dow = firstDate.getDay();
     const diff = dow === 0 ? -6 : 1 - dow;
     firstDate.setDate(firstDate.getDate() + diff);
@@ -98,18 +95,14 @@ export default function TherapyPage() {
     return firstDate;
   };
 
-  // ?�이??로드
   useEffect(() => {
     const loadData = () => {
       const sessions = JSON.parse(localStorage.getItem('hrv_sessions') || '[]');
       const gratitude = JSON.parse(localStorage.getItem('gratitude_entries') || '[]');
       const scheduled = JSON.parse(localStorage.getItem('scheduled_activities') || '[]');
-      const custom = JSON.parse(localStorage.getItem('custom_activities') || '[]');
-      
       setUserRecords(sessions);
       setGratitudeEntries(gratitude);
       setScheduledActivities(scheduled);
-      setCustomActivities(custom);
     };
     loadData();
     window.addEventListener('storage', loadData);
@@ -133,13 +126,12 @@ export default function TherapyPage() {
     stopAudio();
     const audio = new Audio(`data:audio/mp3;base64,${base64}`);
     audioRef.current = audio;
-    audio.play().catch(e => console.warn("[TTS] ?�생 ?�패", e));
+    audio.play().catch(e => console.warn('[TTS] 재생 실패', e));
   };
 
   const startSession = () => {
     setSessionStarted(true);
-    setActiveTab('therapy');
-    sendMessage("?�녕?�세?? ?�담???�작?�고 ?�어??");
+    sendMessage('안녕하세요, 상담을 시작하고 싶어요.');
   };
 
   const sendMessage = async (text: string) => {
@@ -154,21 +146,21 @@ export default function TherapyPage() {
       const res = await fetch(`${backendUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages })
+        body: JSON.stringify({ messages: newMessages }),
       });
 
-      if (!res.ok) throw new Error("?�버 ?�답 ?�류");
+      if (!res.ok) throw new Error('서버 응답 오류');
 
       const data = await res.json();
       setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
       setSuggestedChoices(data.suggested_choices || []);
-      
+
       if (data.audio_base64) {
         playAudio(data.audio_base64);
       }
     } catch (error) {
-      console.error("채팅 ?�류:", error);
-      setMessages([...newMessages, { role: 'assistant', content: "죄송?�요, ?�생?�과 ?�결???�시 ?�겼?�요. ?�래 '종료' 버튼???�르�??�시 ?�도??주세??" }]);
+      console.error('채팅 오류:', error);
+      setMessages([...newMessages, { role: 'assistant', content: "죄송해요, 연결이 잠시 끊겼어요. 잠시 후 다시 시도해 주세요." }]);
     } finally {
       setIsLoading(false);
     }
@@ -180,14 +172,14 @@ export default function TherapyPage() {
     }
   }, [messages, suggestedChoices]);
 
-  // --- RecordView (기본 그리???�태 보존) ---
+  // --- RecordView ---
   const RecordView = () => {
     const sortedRecords = [...userRecords].sort((a, b) => b.id - a.id);
-    
+
     return (
       <div className="flex-1 overflow-y-auto px-4 py-8 space-y-6 bg-white pb-32">
         <div className="text-center space-y-1">
-          <h2 className="text-2xl font-black text-gray-900 tracking-tighter">?�동 기록지</h2>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tighter">활동 기록지</h2>
           <div className="w-12 h-1 bg-primary mx-auto rounded-full" />
         </div>
 
@@ -195,8 +187,8 @@ export default function TherapyPage() {
           <table className="w-full border-collapse text-center text-[12px]">
             <thead>
               <tr className="bg-primary/30 text-gray-900 font-bold border-b-2 border-primary/20">
-                <th className="py-4 px-2 border-r border-primary/10 w-20">?�짜/?�간</th>
-                <th className="py-4 px-4 border-r border-primary/10">?�동 �??�담 ?�용</th>
+                <th className="py-4 px-2 border-r border-primary/10 w-20">날짜/시간</th>
+                <th className="py-4 px-4 border-r border-primary/10">활동 및 상담 내용</th>
                 <th className="py-4 px-2">기분</th>
               </tr>
             </thead>
@@ -205,7 +197,7 @@ export default function TherapyPage() {
                 sortedRecords.slice(0, 15).map((row, i) => (
                   <tr key={i} className="border-b border-primary/10 last:border-0 h-16 odd:bg-primary/5">
                     <td className="text-[10px] leading-tight font-bold text-gray-400 border-r border-primary/10 px-2">
-                       {new Date(row.id).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}<br/>{row.time}
+                      {new Date(row.id).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}<br />{row.time}
                     </td>
                     <td className="text-left px-4 text-xs leading-relaxed font-bold">
                       {row.activity || row.title}
@@ -217,7 +209,7 @@ export default function TherapyPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={3} className="py-20 text-gray-300 font-bold">기록???�이?��? ?�습?�다.</td>
+                  <td colSpan={3} className="py-20 text-gray-300 font-bold">기록된 데이터가 없습니다.</td>
                 </tr>
               )}
             </tbody>
@@ -227,13 +219,12 @@ export default function TherapyPage() {
     );
   };
 
-  // --- ActivityView (?�기관�???- 고도?? ---
+  // --- ActivityView ---
   const ActivityView = () => {
-    // 1. 게이지 ?�이??계산
     const validScores = userRecords.filter(s => s.moodScore !== null).map(s => Number(s.moodScore));
     const avgScore = validScores.length > 0 ? (validScores.reduce((a, b) => a + b, 0) / validScores.length) : 0;
-    
-    // 2. 주차�??�력 ?�이??    const progStart = getProgramStart(userRecords);
+
+    const progStart = getProgramStart(userRecords);
     const weekStart = new Date(progStart);
     weekStart.setDate(progStart.getDate() + (ledgerWeek - 1) * 7);
 
@@ -254,14 +245,14 @@ export default function TherapyPage() {
       return 'bg-rose-400';
     };
 
-    // 3. 감사 ?�기 ?�??    const handleSaveGratitude = () => {
+    const handleSaveGratitude = () => {
       if (!gratitudeInput.trim()) return;
       const newEntry: GratitudeEntry = {
         id: Date.now(),
         date: new Date().toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }),
         text: gratitudeInput,
         stars: gratitudeStars,
-        location: '?�늘???�치'
+        location: '오늘의 위치',
       };
       const updated = [newEntry, ...gratitudeEntries];
       setGratitudeEntries(updated);
@@ -270,7 +261,6 @@ export default function TherapyPage() {
       setGratitudeStars(0);
     };
 
-    // 4. ?�정???�동 ?�료 처리
     const completeActivity = (id: number) => {
       setCurrentSatisfactionId(id);
       setShowSatisfactionModal(true);
@@ -278,25 +268,24 @@ export default function TherapyPage() {
 
     const handleSaveSatisfaction = () => {
       if (currentSatisfactionId === null) return;
-      
-      const updatedScheduled = scheduledActivities.map(a => 
+
+      const updatedScheduled = scheduledActivities.map(a =>
         a.id === currentSatisfactionId ? { ...a, satisfaction: satisfactionScore } : a
       );
       setScheduledActivities(updatedScheduled);
       syncData('scheduled_activities', updatedScheduled);
 
-      // 리포?�에??반영
       const target = scheduledActivities.find(x => x.id === currentSatisfactionId);
       if (target) {
         const newSession: Session = {
           id: Date.now(),
-          title: '?�동 ?�료',
+          title: '활동 완료',
           time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
           hour: new Date().getHours(),
-          summary: `${target.name} ?�료`,
+          summary: `${target.name} 완료`,
           activity: target.name,
           moodScore: satisfactionScore,
-          dateKey: getDateKey(new Date())
+          dateKey: getDateKey(new Date()),
         };
         const updatedSessions = [newSession, ...userRecords];
         setUserRecords(updatedSessions);
@@ -310,35 +299,35 @@ export default function TherapyPage() {
     return (
       <div className="flex-1 overflow-y-auto px-4 py-8 space-y-6 bg-white pb-32">
         <div className="text-center space-y-1">
-          <h2 className="text-2xl font-black text-gray-900 tracking-tighter">?�늘???�기관�?/h2>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tighter">오늘의 자기관리</h2>
           <div className="w-12 h-1 bg-primary mx-auto rounded-full" />
         </div>
 
-        {/* 1. 무드 게이지 카드 */}
-        <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm relative overflow-hidden">
+        {/* 무드 게이지 */}
+        <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm">
           <div className="flex flex-col items-center">
             <div className="relative w-48 h-24 mb-6">
               <svg viewBox="0 0 100 55" className="w-full h-full">
                 <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#F1F3F9" strokeWidth="8" strokeLinecap="round" />
-                <motion.path 
+                <motion.path
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: avgScore / 10 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#gaugeGradient)" strokeWidth="8" strokeLinecap="round" 
+                  transition={{ duration: 1.5, ease: 'easeOut' }}
+                  d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#gaugeGradient)" strokeWidth="8" strokeLinecap="round"
                 />
                 <defs>
-                   <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                     <stop offset="0%" stopColor="#FB7185" />
-                     <stop offset="50%" stopColor="#FBBF24" />
-                     <stop offset="100%" stopColor="#34D399" />
-                   </linearGradient>
+                  <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#FB7185" />
+                    <stop offset="50%" stopColor="#FBBF24" />
+                    <stop offset="100%" stopColor="#34D399" />
+                  </linearGradient>
                 </defs>
               </svg>
-              <motion.div 
+              <motion.div
                 className="absolute bottom-0 left-1/2 w-1.5 h-20 bg-gray-900 rounded-full origin-bottom"
                 initial={{ rotate: -90 }}
                 animate={{ rotate: (avgScore / 10) * 180 - 90 }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
                 style={{ translateX: '-50%' }}
               />
               <div className="absolute inset-0 flex flex-col items-center justify-end pb-3">
@@ -347,214 +336,203 @@ export default function TherapyPage() {
               </div>
             </div>
             <p className="text-sm font-bold text-gray-400 text-center leading-relaxed">
-              {avgScore >= 7 ? "?�� ?�반?�으�??�주 ?�정?�인 ?�태?�니??" : avgScore >= 4 ? "?�� 기분 ?�환???�해 ?�늘 추천 ?�동???�보?�요." : "?�� 마음?�음�???깊�? ?�?��? ?�요???�간?�에??"}
+              {avgScore >= 7 ? '😊 전반적으로 아주 안정적인 상태입니다.' : avgScore >= 4 ? '😐 기분 전환을 위해 오늘 추천 활동을 해보세요.' : '😔 마음이음과 더 깊은 대화가 필요한 시간이에요.'}
             </p>
           </div>
         </div>
 
-        {/* 2. 기분 ?�력 */}
+        {/* 기분 달력 */}
         <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm">
-           <div className="flex justify-between items-center mb-6">
-             <span className="font-black text-gray-900 text-lg">기분 ?�력</span>
-             <div className="flex items-center gap-4 bg-gray-50 px-3 py-1.5 rounded-2xl">
-                <button onClick={() => setLedgerWeek(prev => Math.max(1, prev-1))}><ChevronLeft size={16} /></button>
-                <span className="text-xs font-black text-primary-dark">{ledgerWeek}주차</span>
-                <button onClick={() => setLedgerWeek(prev => prev + 1)}><ChevronRight size={16} /></button>
-             </div>
-           </div>
-           <div className="grid grid-cols-7 gap-3">
-              {weekDays.map((day, i) => (
-                <div key={i} className="flex flex-col items-center gap-2">
-                   <span className="text-[10px] font-black text-gray-400">{['??,'??,'??,'�?,'�?,'??,'??][i]}</span>
-                   <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm transition-all ${getMoodColor(day.avg)}`}>
-                      <span className="text-white font-black text-xs">{day.avg ? day.avg.toFixed(0) : ''}</span>
-                   </div>
-                   <span className="text-[9px] font-bold text-gray-300">{day.date.getDate()}</span>
+          <div className="flex justify-between items-center mb-6">
+            <span className="font-black text-gray-900 text-lg">기분 달력</span>
+            <div className="flex items-center gap-4 bg-gray-50 px-3 py-1.5 rounded-2xl">
+              <button onClick={() => setLedgerWeek(prev => Math.max(1, prev - 1))}><ChevronLeft size={16} /></button>
+              <span className="text-xs font-black text-primary-dark">{ledgerWeek}주차</span>
+              <button onClick={() => setLedgerWeek(prev => prev + 1)}><ChevronRight size={16} /></button>
+            </div>
+          </div>
+          <div className="grid grid-cols-7 gap-3">
+            {weekDays.map((day, i) => (
+              <div key={i} className="flex flex-col items-center gap-2">
+                <span className="text-[10px] font-black text-gray-400">{['월', '화', '수', '목', '금', '토', '일'][i]}</span>
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm transition-all ${getMoodColor(day.avg)}`}>
+                  <span className="text-white font-black text-xs">{day.avg ? day.avg.toFixed(0) : ''}</span>
                 </div>
-              ))}
-           </div>
+                <span className="text-[9px] font-bold text-gray-300">{day.date.getDate()}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* 3. ?�공지??기반 ?�동 ?�사?�트 */}
+        {/* 활동 인사이트 */}
         {avgScore >= 7 && (
           <div className="bg-secondary/50 rounded-[40px] p-8 border-2 border-primary/30 flex items-center gap-6">
-             <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-3xl shadow-sm border border-primary/10">?��</div>
-             <div className="flex-1">
-                <p className="text-xs font-bold text-gray-400 mb-1">?��? ?�복?�게 만든 ?�동</p>
-                <h4 className="font-black text-gray-900 text-lg leading-tight tracking-tighter">기분??좋았????<br/>주로 <span className="text-primary-dark underline underline-offset-4">?�책</span>???�셨?�요!</h4>
-             </div>
+            <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-3xl shadow-sm border border-primary/10">🏃</div>
+            <div className="flex-1">
+              <p className="text-xs font-bold text-gray-400 mb-1">나를 행복하게 만든 활동</p>
+              <h4 className="font-black text-gray-900 text-lg leading-tight tracking-tighter">기분이 좋았던 날,<br />주로 <span className="text-primary-dark underline underline-offset-4">산책</span>을 하셨네요!</h4>
+            </div>
           </div>
         )}
 
-        {/* 4. ?�동 ?�정 관�?*/}
+        {/* 활동 일정 관리 */}
         <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm space-y-6">
           <div className="flex justify-between items-center">
-            <h3 className="font-black text-gray-900 text-lg">?�동 ?�정 관�?/h3>
-            <button className="text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 px-3 py-1 rounded-full hover:bg-gray-50">Manage</button>
+            <h3 className="font-black text-gray-900 text-lg">활동 일정 관리</h3>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
-             {ACTIVITY_BANK.map((act, i) => (
-               <button key={i} className="px-4 py-2.5 bg-gray-50 rounded-2xl text-xs font-bold text-gray-600 hover:bg-primary/20 active:scale-95 transition-all flex items-center gap-2">
-                 <span>{act.emoji}</span> {act.name}
-               </button>
-             ))}
-             <button className="w-10 h-10 border-2 border-dashed border-primary-dark rounded-2xl flex items-center justify-center text-primary-dark"><Plus size={18} /></button>
+            {ACTIVITY_BANK.map((act, i) => (
+              <button key={i} className="px-4 py-2.5 bg-gray-50 rounded-2xl text-xs font-bold text-gray-600 hover:bg-primary/20 active:scale-95 transition-all flex items-center gap-2">
+                <span>{act.emoji}</span> {act.name}
+              </button>
+            ))}
+            <button className="w-10 h-10 border-2 border-dashed border-primary-dark rounded-2xl flex items-center justify-center text-primary-dark"><Plus size={18} /></button>
           </div>
 
           <div className="space-y-3 pt-4">
-             {scheduledActivities.length > 0 ? (
-               scheduledActivities.map((sa, i) => (
-                 <div key={i} className="bg-gray-50 p-4 rounded-3xl flex items-center gap-4 group">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm">{sa.emoji}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-black text-gray-900">{sa.name}</span>
-                        {sa.satisfaction && <div className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[9px] font-black rounded-full">{sa.satisfaction} pt</div>}
-                      </div>
-                      <p className="text-[10px] font-bold text-gray-400">{sa.scheduledTime} · {sa.dateKey.split('-')[2]}??/p>
+            {scheduledActivities.length > 0 ? (
+              scheduledActivities.map((sa, i) => (
+                <div key={i} className="bg-gray-50 p-4 rounded-3xl flex items-center gap-4 group">
+                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm">{sa.emoji}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-gray-900">{sa.name}</span>
+                      {sa.satisfaction && <div className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[9px] font-black rounded-full">{sa.satisfaction} pt</div>}
                     </div>
-                    {sa.satisfaction === null ? (
-                      <button onClick={() => completeActivity(sa.id)} className="bg-gray-900 text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95">Complete</button>
-                    ) : (
-                      <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500"><Check size={20} /></div>
-                    )}
-                 </div>
-               ))
-             ) : (
-               <p className="text-gray-300 font-bold text-center py-4">?�물??비료�?주는 ?�정???�습?�다.</p>
-             )}
+                    <p className="text-[10px] font-bold text-gray-400">{sa.scheduledTime} · {sa.dateKey.split('-')[2]}일</p>
+                  </div>
+                  {sa.satisfaction === null ? (
+                    <button onClick={() => completeActivity(sa.id)} className="bg-gray-900 text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95">완료</button>
+                  ) : (
+                    <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500"><Check size={20} /></div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-300 font-bold text-center py-4">위에서 활동을 선택해 일정을 추가해보세요!</p>
+            )}
           </div>
         </div>
 
-        {/* 5. 감사 ?�기 */}
+        {/* 감사 일기 */}
         <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm space-y-6">
-           <h3 className="font-black text-gray-900 text-lg">?�� 감사 ?�기</h3>
-           <div className="space-y-4">
-              <div className="flex gap-2">
-                 {['nature', 'home', 'work'].map(theme => (
-                    <button key={theme} className="w-16 h-12 bg-gray-50 border border-gray-100 rounded-2xl flex items-center justify-center text-xl hover:bg-primary/10 transition-all font-black text-gray-300">#</button>
-                 ))}
-                 <button className="flex-1 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-0.5">
-                    <span className="text-lg text-gray-300">+</span>
-                    <span className="text-[8px] font-black text-gray-300">Photo</span>
-                 </button>
+          <h3 className="font-black text-gray-900 text-lg">📔 감사 일기</h3>
+          <div className="space-y-4">
+            <textarea
+              value={gratitudeInput}
+              onChange={(e) => setGratitudeInput(e.target.value)}
+              placeholder="오늘 감사했던 따뜻한 순간을 적어보세요..."
+              className="w-full h-32 bg-gray-50 border-none rounded-[32px] p-6 text-sm font-medium focus:ring-2 focus:ring-primary/50 outline-none resize-none"
+            />
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex gap-1.5">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <button key={star} onClick={() => setGratitudeStars(star)}>
+                    <Star size={24} className={star <= gratitudeStars ? 'text-amber-400 fill-current' : 'text-gray-200'} />
+                  </button>
+                ))}
               </div>
-              <textarea 
-                value={gratitudeInput}
-                onChange={(e) => setGratitudeInput(e.target.value)}
-                placeholder="?�늘 감사?�던 ?�뜻???�간????걸음 ?�어보세??.." 
-                className="w-full h-32 bg-gray-50 border-none rounded-[32px] p-6 text-sm font-medium focus:ring-2 focus:ring-primary/50 outline-none resize-none" 
-              />
-              <div className="flex items-center justify-between pt-2">
-                 <div className="flex gap-1.5">
-                    {[1, 2, 3, 4, 5].map(star => (
-                       <button key={star} onClick={() => setGratitudeStars(star)}>
-                         <Star size={24} className={star <= gratitudeStars ? "text-amber-400 fill-current" : "text-gray-200"} />
-                       </button>
-                    ))}
-                 </div>
-                 <div className="flex items-center gap-4">
-                    <span className="text-[10px] font-black text-primary-dark flex items-center gap-1"><MapPin size={10} /> ?�화로운 ?�상</span>
-                    <button onClick={handleSaveGratitude} className="bg-primary text-gray-900 px-6 py-3 rounded-full font-black text-sm shadow-premium active:scale-95 transition-all">?�??/button>
-                 </div>
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] font-black text-primary-dark flex items-center gap-1"><MapPin size={10} /> 평화로운 일상</span>
+                <button onClick={handleSaveGratitude} className="bg-primary text-gray-900 px-6 py-3 rounded-full font-black text-sm active:scale-95 transition-all">저장</button>
               </div>
-           </div>
+            </div>
+          </div>
 
-           <div className="space-y-4 pt-6">
-              {gratitudeEntries.map((e, i) => (
-                <div key={i} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm relative group overflow-hidden">
-                   <div className="flex items-center justify-between mb-3">
-                      <div className="px-3 py-1 bg-secondary text-primary-dark text-[10px] font-black rounded-lg">{e.date} · {e.location}</div>
-                      <div className="flex gap-0.5">
-                         {[...Array(e.stars)].map((_, j) => <Star key={j} size={12} className="text-amber-400 fill-current" />)}
-                      </div>
-                   </div>
-                   <p className="text-sm font-bold text-gray-600 leading-relaxed">"{e.text}"</p>
-                   <button className="absolute bottom-4 right-4 text-gray-200 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16} /></button>
+          <div className="space-y-4 pt-6">
+            {gratitudeEntries.map((e, i) => (
+              <div key={i} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm relative group overflow-hidden">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="px-3 py-1 bg-secondary text-primary-dark text-[10px] font-black rounded-lg">{e.date} · {e.location}</div>
+                  <div className="flex gap-0.5">
+                    {[...Array(e.stars)].map((_, j) => <Star key={j} size={12} className="text-amber-400 fill-current" />)}
+                  </div>
                 </div>
-              ))}
-           </div>
+                <p className="text-sm font-bold text-gray-600 leading-relaxed">"{e.text}"</p>
+                <button className="absolute bottom-4 right-4 text-gray-200 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16} /></button>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Satisfaction Modal */}
+        {/* 만족도 모달 */}
         {showSatisfactionModal && (
           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
-             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[48px] p-10 w-full max-w-sm text-center shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
-                <h3 className="text-2xl font-black text-gray-900 mb-2">?�동 ?�료! ?��</h3>
-                <p className="text-sm font-bold text-gray-400 mb-8">?�동 ??기분?� ?�떠?��???</p>
-                <div className="space-y-6 mb-10">
-                   <div className="flex justify-between text-[10px] font-black text-gray-300 uppercase tracking-widest px-2">
-                      <span>Worst</span>
-                      <span>Great</span>
-                   </div>
-                   <input type="range" min="0" max="10" step="1" value={satisfactionScore} onChange={(e) => setSatisfactionScore(parseInt(e.target.value))} className="w-full accent-primary" />
-                   <div className="text-6xl font-black text-gray-900 tracking-tighter">{satisfactionScore}</div>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[48px] p-10 w-full max-w-sm text-center shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
+              <h3 className="text-2xl font-black text-gray-900 mb-2">활동 완료! 🎉</h3>
+              <p className="text-sm font-bold text-gray-400 mb-8">활동 후 기분은 어떠신가요?</p>
+              <div className="space-y-6 mb-10">
+                <div className="flex justify-between text-[10px] font-black text-gray-300 uppercase tracking-widest px-2">
+                  <span>Worst</span>
+                  <span>Great</span>
                 </div>
-                <div className="flex gap-3">
-                   <button onClick={() => setShowSatisfactionModal(false)} className="flex-1 py-4 font-black text-gray-400">Cancel</button>
-                   <button onClick={handleSaveSatisfaction} className="flex-1 py-4 bg-primary rounded-3xl font-black text-gray-900 shadow-lg">?�수 ?�??/button>
-                </div>
-             </motion.div>
+                <input type="range" min="0" max="10" step="1" value={satisfactionScore} onChange={(e) => setSatisfactionScore(parseInt(e.target.value))} className="w-full accent-primary" />
+                <div className="text-6xl font-black text-gray-900 tracking-tighter">{satisfactionScore}</div>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setShowSatisfactionModal(false)} className="flex-1 py-4 font-black text-gray-400">취소</button>
+                <button onClick={handleSaveSatisfaction} className="flex-1 py-4 bg-primary rounded-3xl font-black text-gray-900 shadow-lg">점수 저장</button>
+              </div>
+            </motion.div>
           </div>
         )}
       </div>
     );
   };
 
-  // --- Main Render ---
   return (
     <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col font-sans relative overflow-hidden">
       {!sessionStarted ? (
         <>
-          {/* ?�단 ???�택 �?*/}
+          {/* 세션 선택 탭 */}
           <div className="px-6 pt-10 pb-6 flex justify-center sticky top-0 bg-white/80 backdrop-blur-md z-30">
-             <div className="bg-secondary rounded-[28px] p-2 flex w-full shadow-inner border-2 border-primary/20 font-bold">
-               <button 
-                 onClick={() => setSelectedSession('morning')}
-                 className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'morning' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
-               >
-                 <span>?��?/span> ?�침 ?�션
-               </button>
-               <button 
-                 onClick={() => setSelectedSession('evening')}
-                 className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'evening' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
-               >
-                 <span>?��</span> ?�???�션
-               </button>
-             </div>
+            <div className="bg-secondary rounded-[28px] p-2 flex w-full shadow-inner border-2 border-primary/20 font-bold">
+              <button
+                onClick={() => setSelectedSession('morning')}
+                className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'morning' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
+              >
+                <span>☀️</span> 아침 세션
+              </button>
+              <button
+                onClick={() => setSelectedSession('evening')}
+                className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'evening' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
+              >
+                <span>🌙</span> 저녁 세션
+              </button>
+            </div>
           </div>
 
           <AnimatePresence mode="wait">
             {activeTab === 'therapy' && (
-              <motion.section 
+              <motion.section
                 key="therapy-home"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="flex-1 flex flex-col items-center justify-start gap-10 pt-10 pb-32"
               >
                 <div className="relative">
                   <div className="w-56 h-56 bg-primary rounded-[70px] flex items-center justify-center shadow-2xl rotate-3 border-8 border-white/50">
-                     <div className="text-8xl -rotate-3">?��</div>
+                    <div className="text-8xl -rotate-3">🤖</div>
                   </div>
                   <motion.div animate={{ scale: [1, 1.4], opacity: [0.6, 0] }} transition={{ duration: 2.5, repeat: Infinity }} className="absolute inset-0 border-4 border-primary rounded-full -z-10" />
                 </div>
                 <div className="text-center space-y-4 px-8">
-                   <h2 className="text-5xl font-black text-gray-900 leading-[1.1] tracking-tighter">마음?�음�?br />?�?�하�?/h2>
-                   <p className="text-[22px] text-gray-900/60 font-bold leading-relaxed px-4">?�르?�의 마음???�뜻?�게<br />?�어주는 ?�?��? 준비되?�습?�다.</p>
+                  <h2 className="text-5xl font-black text-gray-900 leading-[1.1] tracking-tighter">마음이음과<br />대화하기</h2>
+                  <p className="text-[22px] text-gray-900/60 font-bold leading-relaxed px-4">어르신의 마음을 따뜻하게<br />들어주는 대화가 준비되었습니다.</p>
                 </div>
                 <footer className="px-6 py-10 w-full mt-auto">
-                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={startSession}
-                     className="w-full relative overflow-hidden group bg-primary rounded-[50px] p-8 shadow-premium active:scale-[0.98] transition-all text-left flex items-center justify-between border-8 border-white/50"
-                   >
-                     <div className="flex flex-col">
-                        <span className="text-gray-900/40 text-[10px] font-black tracking-widest uppercase mb-1">CALL START</span>
-                        <span className="text-3xl font-black text-gray-900 tracking-tighter">?�화 ?�작?�기</span>
-                     </div>
-                     <div className="bg-white p-4 rounded-full shadow-xl group-hover:translate-x-1 transition-transform">
-                       <Phone size={24} className="text-gray-900" />
-                     </div>
-                   </motion.button>
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={startSession}
+                    className="w-full relative overflow-hidden group bg-primary rounded-[50px] p-8 active:scale-[0.98] transition-all text-left flex items-center justify-between border-8 border-white/50"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-gray-900/40 text-[10px] font-black tracking-widest uppercase mb-1">CALL START</span>
+                      <span className="text-3xl font-black text-gray-900 tracking-tighter">통화 시작하기</span>
+                    </div>
+                    <div className="bg-white p-4 rounded-full shadow-xl group-hover:translate-x-1 transition-transform">
+                      <Phone size={24} className="text-gray-900" />
+                    </div>
+                  </motion.button>
                 </footer>
               </motion.section>
             )}
@@ -572,87 +550,81 @@ export default function TherapyPage() {
             )}
           </AnimatePresence>
 
-          {/* ?�단 ?�비게이??*/}
+          {/* 하단 네비게이션 */}
           <div className="bg-white/95 backdrop-blur-2xl border-t border-gray-100 h-24 flex justify-around items-center px-10 z-[60] fixed bottom-0 max-w-md w-full">
-             <div className="flex flex-col items-center gap-1 group cursor-pointer" onClick={() => router.push('/')}>
-               <Home size={24} className="text-gray-400 group-hover:text-gray-900" />
-               <span className="text-[10px] font-black text-gray-400">??/span>
-             </div>
-             {/* ?�동 ??(?�담) */}
-             <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('therapy')}>
-               <div className={`p-4 rounded-full shadow-2xl -mt-10 border-4 border-white transition-all ${activeTab === 'therapy' ? 'bg-primary' : 'bg-gray-100'}`}>
-                  <MessageCircle size={28} className={activeTab === 'therapy' ? 'text-gray-900' : 'text-gray-400'} />
-               </div>
-               <span className={`text-[10px] font-black ${activeTab === 'therapy' ? 'text-gray-900' : 'text-gray-400'}`}>?�동</span>
-             </div>
-
-             {/* 기록 ??*/}
-             <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('record')}>
-               <TrendingUp size={24} className={activeTab === 'record' ? 'text-primary-dark' : 'text-gray-400'} />
-               <span className={`text-[10px] font-black ${activeTab === 'record' ? 'text-gray-900' : 'text-gray-400'}`}>기록</span>
-             </div>
-             
-             {/* ?�기관�???*/}
-             <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('activity')}>
-               <Heart size={24} className={activeTab === 'activity' ? 'text-primary-dark' : 'text-gray-400'} fill={activeTab === 'activity' ? 'currentColor' : 'none'} />
-               <span className={`text-[10px] font-black ${activeTab === 'activity' ? 'text-gray-900' : 'text-gray-400'}`}>?�기관�?/span>
-             </div>
+            <div className="flex flex-col items-center gap-1 group cursor-pointer" onClick={() => router.push('/')}>
+              <Home size={24} className="text-gray-400 group-hover:text-gray-900" />
+              <span className="text-[10px] font-black text-gray-400">홈</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('therapy')}>
+              <div className={`p-4 rounded-full shadow-2xl -mt-10 border-4 border-white transition-all ${activeTab === 'therapy' ? 'bg-primary' : 'bg-gray-100'}`}>
+                <MessageCircle size={28} className={activeTab === 'therapy' ? 'text-gray-900' : 'text-gray-400'} />
+              </div>
+              <span className={`text-[10px] font-black ${activeTab === 'therapy' ? 'text-gray-900' : 'text-gray-400'}`}>활동</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('record')}>
+              <TrendingUp size={24} className={activeTab === 'record' ? 'text-primary-dark' : 'text-gray-400'} />
+              <span className={`text-[10px] font-black ${activeTab === 'record' ? 'text-gray-900' : 'text-gray-400'}`}>기록</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('activity')}>
+              <Heart size={24} className={activeTab === 'activity' ? 'text-primary-dark' : 'text-gray-400'} fill={activeTab === 'activity' ? 'currentColor' : 'none'} />
+              <span className={`text-[10px] font-black ${activeTab === 'activity' ? 'text-gray-900' : 'text-gray-400'}`}>자기관리</span>
+            </div>
           </div>
         </>
       ) : (
-        // AI ?�담 진행 �??�면
         <div className="flex-1 flex flex-col h-full">
-          <header className="flex justify-between items-center py-6 px-8 sticky top-0 bg-background/80 backdrop-blur-md z-30">
+          <header className="flex justify-between items-center py-6 px-8 sticky top-0 bg-white/80 backdrop-blur-md z-30">
             <button onClick={() => setSessionStarted(false)} className="p-4 rounded-[24px] bg-white shadow-sm text-gray-900 border border-gray-100 active:scale-95">
               <ArrowLeft size={28} />
             </button>
             <div className="flex flex-col items-center">
-               <span className="text-2xl font-black tracking-tight">마음?�음</span>
-               <div className="flex items-center gap-1.5">
-                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                 <span className="text-xs font-black text-green-600 uppercase tracking-widest">Connected</span>
-               </div>
+              <span className="text-2xl font-black tracking-tight">마음이음</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-xs font-black text-green-600 uppercase tracking-widest">Connected</span>
+              </div>
             </div>
-            <button 
-               onClick={() => {
-                 const newState = !isVoiceEnabled;
-                 setIsVoiceEnabled(newState);
-                 if (!newState) stopAudio();
-               }}
-               className={`p-4 rounded-[24px] shadow-premium transition-all ${isVoiceEnabled ? 'bg-primary text-gray-900' : 'bg-white text-gray-300 border border-gray-100'}`}
+            <button
+              onClick={() => {
+                const newState = !isVoiceEnabled;
+                setIsVoiceEnabled(newState);
+                if (!newState) stopAudio();
+              }}
+              className={`p-4 rounded-[24px] transition-all ${isVoiceEnabled ? 'bg-primary text-gray-900' : 'bg-white text-gray-300 border border-gray-100'}`}
             >
               {isVoiceEnabled ? <Volume2 size={28} /> : <VolumeX size={28} />}
             </button>
           </header>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 space-y-10 py-10 bg-background scroll-smooth pb-40">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 space-y-10 py-10 bg-white scroll-smooth pb-40">
             <AnimatePresence initial={false}>
               {messages.filter(m => m.role !== 'system').map((msg, idx) => (
                 <motion.div key={idx} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[90%] p-10 rounded-[48px] shadow-premium text-[1.65rem] font-black leading-[1.5] ${msg.role === 'user' ? 'bg-gray-900 text-white rounded-tr-none' : 'bg-primary text-gray-900 rounded-tl-none border-4 border-white/50'}`}>
+                  <div className={`max-w-[90%] p-8 rounded-[40px] text-[1.5rem] font-black leading-[1.6] ${msg.role === 'user' ? 'bg-gray-900 text-white rounded-tr-none' : 'bg-primary text-gray-900 rounded-tl-none border-4 border-white/50'}`}>
                     {msg.content}
                   </div>
                 </motion.div>
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white/40 backdrop-blur-sm p-6 rounded-[32px] flex items-center gap-4 shadow-sm border border-white/20">
-                    <Sparkles size={24} className="animate-spin text-gray-900" />
-                    <span className="font-black text-gray-900/40 text-lg uppercase tracking-tighter">Listening...</span>
+                  <div className="bg-gray-50 p-6 rounded-[32px] flex items-center gap-4 shadow-sm">
+                    <Sparkles size={24} className="animate-spin text-gray-400" />
+                    <span className="font-black text-gray-400 text-lg">듣고 있어요...</span>
                   </div>
                 </div>
               )}
             </AnimatePresence>
           </div>
 
-          <footer className="bg-white/90 backdrop-blur-xl p-6 space-y-6 border-t border-gray-100 pb-12 z-20 absolute bottom-0 left-0 right-0">
-            <div className="flex justify-center gap-10 py-2">
-               <button onClick={() => setSessionStarted(false)} className="flex flex-col items-center gap-3 active:scale-90 transition-transform">
-                 <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-white shadow-[0_12px_24px_rgba(239,68,68,0.4)] border-8 border-white">
-                   <Phone size={32} className="rotate-[135deg] fill-current" />
-                 </div>
-                 <span className="font-black text-red-500 text-base uppercase tracking-widest">End Call</span>
-               </button>
+          <footer className="bg-white/90 backdrop-blur-xl p-6 border-t border-gray-100 pb-12 z-20 absolute bottom-0 left-0 right-0">
+            <div className="flex justify-center py-2">
+              <button onClick={() => setSessionStarted(false)} className="flex flex-col items-center gap-3 active:scale-90 transition-transform">
+                <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-white shadow-[0_12px_24px_rgba(239,68,68,0.4)] border-8 border-white">
+                  <Phone size={28} className="rotate-[135deg]" />
+                </div>
+                <span className="font-black text-red-500 text-base uppercase tracking-widest">End Call</span>
+              </button>
             </div>
           </footer>
         </div>
