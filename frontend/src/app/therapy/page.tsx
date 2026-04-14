@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Home, Volume2, VolumeX, MessageCircle, Heart, TrendingUp, Sparkles, Plus, Star, MapPin, Trash2, Check, ChevronRight, ChevronLeft, Phone } from 'lucide-react';
+import { Home, Volume2, VolumeX, MessageCircle, Heart, TrendingUp, Sparkles, Plus, Star, MapPin, Trash2, Check, ChevronRight, ChevronLeft, Phone, ClipboardList, Send, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Choice {
@@ -60,7 +60,7 @@ export default function TherapyPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [suggestedChoices, setSuggestedChoices] = useState<Choice[]>([]);
-  const [activeTab, setActiveTab] = useState<'therapy' | 'record' | 'activity'>('therapy');
+  const [activeTab, setActiveTab] = useState<'therapy' | 'record' | 'activity' | 'gratitude'>('therapy');
 
   // Data States
   const [userRecords, setUserRecords] = useState<Session[]>([]);
@@ -75,6 +75,11 @@ export default function TherapyPage() {
   const [currentSatisfactionId, setCurrentSatisfactionId] = useState<number | null>(null);
   const [satisfactionScore, setSatisfactionScore] = useState(5);
   const [selectedSession, setSelectedSession] = useState<'morning' | 'evening'>('morning');
+  const [ledgerDay, setLedgerDay] = useState(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1); // 0:월, 1:화 ... 6:일
+
+  // Session Detail Modal States
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [selectedDetailSession, setSelectedDetailSession] = useState<Session | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -97,7 +102,7 @@ export default function TherapyPage() {
   };
 
   useEffect(() => {
-    const loadData = () => {
+    const loadFromBrowser = () => {
       const sessions = JSON.parse(localStorage.getItem('hrv_sessions') || '[]');
       const gratitude = JSON.parse(localStorage.getItem('gratitude_entries') || '[]');
       const scheduled = JSON.parse(localStorage.getItem('scheduled_activities') || '[]');
@@ -105,9 +110,32 @@ export default function TherapyPage() {
       setGratitudeEntries(gratitude);
       setScheduledActivities(scheduled);
     };
-    loadData();
-    window.addEventListener('storage', loadData);
-    return () => window.removeEventListener('storage', loadData);
+
+    const loadFromServer = async () => {
+      try {
+        const res = await fetch(`${backendUrl}/api/get_data`);
+        if (!res.ok) throw new Error('API Not Found');
+        const data = await res.json();
+        if (data && Object.keys(data).length > 0) {
+          Object.keys(data).forEach(key => {
+            const val = data[key];
+            if (val) {
+              const stringVal = typeof val === 'string' ? val : JSON.stringify(val);
+              localStorage.setItem(key, stringVal);
+            }
+          });
+          console.log('[Sync] 서버 데이터 적용 완료');
+        }
+      } catch (e) {
+        console.warn('[Sync] 서버 연결 실패, 기존 데이터 유지');
+      } finally {
+        loadFromBrowser();
+      }
+    };
+
+    loadFromServer();
+    window.addEventListener('storage', loadFromBrowser);
+    return () => window.removeEventListener('storage', loadFromBrowser);
   }, []);
 
   const syncData = (key: string, data: any) => {
@@ -132,10 +160,19 @@ export default function TherapyPage() {
 
   const startSession = () => {
     setSessionStarted(true);
-    sendMessage('안녕하세요, 상담을 시작하고 싶어요.');
+    
+    // 전날 활동 기록 요약 생성
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yKey = getDateKey(yesterday);
+    const yesterdaySessions = userRecords.filter(s => s.dateKey === yKey);
+    const activities = yesterdaySessions.map(s => s.activity).filter(Boolean).join(', ');
+    const summaryContext = activities ? `사용자가 어제 수행한 활동: ${activities}` : '어제 특별한 활동 기록 없음';
+
+    sendMessage('안녕하세요, 상담을 시작하고 싶어요.', summaryContext);
   };
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = async (text: string, summaryContext?: string) => {
     if (!text.trim() || isLoading) return;
 
     const newMessages = [...messages, { role: 'user', content: text }];
@@ -147,7 +184,10 @@ export default function TherapyPage() {
       const res = await fetch(`${backendUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ 
+          messages: newMessages,
+          summary_context: summaryContext 
+        }),
       });
 
       if (!res.ok) throw new Error('서버 응답 오류');
@@ -173,48 +213,171 @@ export default function TherapyPage() {
     }
   }, [messages, suggestedChoices]);
 
+  const completeActivity = (id: number) => {
+    setCurrentSatisfactionId(id);
+    setShowSatisfactionModal(true);
+  };
+
+  const handleSaveSatisfaction = () => {
+    if (currentSatisfactionId === null) return;
+
+    const updatedScheduled = scheduledActivities.map(a =>
+      a.id === currentSatisfactionId ? { ...a, satisfaction: satisfactionScore } : a
+    );
+    setScheduledActivities(updatedScheduled);
+    syncData('scheduled_activities', updatedScheduled);
+
+    const target = scheduledActivities.find(x => x.id === currentSatisfactionId);
+    if (target) {
+      const newSession: Session = {
+        id: Date.now(),
+        title: '활동 완료',
+        time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+        hour: new Date().getHours(),
+        summary: `${target.name} 완료`,
+        activity: target.name,
+        moodScore: satisfactionScore,
+        dateKey: getDateKey(new Date()),
+      };
+      const updatedSessions = [newSession, ...userRecords];
+      setUserRecords(updatedSessions);
+      syncData('hrv_sessions', updatedSessions);
+    }
+
+    setShowSatisfactionModal(false);
+    setCurrentSatisfactionId(null);
+  };
+
   // --- RecordView ---
   const RecordView = () => {
-    const sortedRecords = [...userRecords].sort((a, b) => b.id - a.id);
+    const ACTIVITY_SLOTS = [
+      { label: '오전', start: 6, end: 12 },
+      { label: '오후', start: 12, end: 18 },
+      { label: '저녁', start: 18, end: 24 },
+    ];
+
+    const DAYS_KO = ['월', '화', '수', '목', '금', '토', '일'];
+
+    const progStart = getProgramStart(userRecords);
+    const weekStart = new Date(progStart);
+    weekStart.setDate(progStart.getDate() + (ledgerWeek - 1) * 7);
+    
+    // 선택된 날짜
+    const selectedDate = new Date(weekStart);
+    selectedDate.setDate(weekStart.getDate() + ledgerDay);
+    const dateStr = `${selectedDate.getMonth() + 1}/${selectedDate.getDate()}`;
+    const dayName = DAYS_KO[ledgerDay];
+
+    const getSessionForHour = (hour: number) => {
+      const key = getDateKey(selectedDate);
+      return userRecords.find(s => s.dateKey === key && s.hour === hour);
+    };
 
     return (
-      <div className="flex-1 overflow-y-auto px-4 py-8 space-y-6 bg-white pb-32">
-        <div className="text-center space-y-1">
-          <h2 className="text-2xl font-black text-gray-900 tracking-tighter">활동 기록지</h2>
-          <div className="w-12 h-1 bg-primary mx-auto rounded-full" />
+      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8 bg-[#F8FAFC] pb-32">
+        {/* 상단 주차 및 요일 선택 */}
+        <div className="bg-white rounded-[40px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-8">
+          <div className="flex justify-between items-center px-4">
+            <button onClick={() => setLedgerWeek(prev => Math.max(1, prev - 1))} className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 active:scale-95 transition-all">
+              <ChevronLeft size={20} />
+            </button>
+            <span className="text-xl font-black text-gray-900">{ledgerWeek}주차</span>
+            <button onClick={() => setLedgerWeek(prev => prev + 1)} className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 active:scale-95 transition-all">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+
+          <div className="flex justify-between items-center px-1">
+            {DAYS_KO.map((day, i) => (
+              <button
+                key={i}
+                onClick={() => setLedgerDay(i)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all ${i === ledgerDay ? 'bg-[#EAB308] text-white shadow-[0_4px_12px_rgba(234,179,8,0.3)]' : 'text-[#854d0e] bg-[#FEF9C3] hover:bg-[#FEF08A]'} active:scale-90`}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+
+          {/* 활동 기록 테이블 */}
+          <div className="border border-gray-200 rounded-2xl overflow-hidden">
+            <table className="w-full border-collapse text-[11px]">
+              <thead>
+                <tr className="bg-gray-50 text-gray-500 font-bold border-b border-gray-200">
+                  <th rowSpan={2} className="py-4 border-r border-gray-200 w-16">시간대</th>
+                  <th rowSpan={2} className="py-4 border-r border-gray-200 w-16">구분</th>
+                  <th colSpan={2} className="py-2 bg-white text-gray-900 border-b border-gray-100">
+                    <span className="font-black">{dateStr}</span> {dayName}요일
+                  </th>
+                </tr>
+                <tr className="bg-gray-50 text-gray-500 font-bold border-b border-gray-200">
+                  <th className="py-2 border-r border-gray-200">활동</th>
+                  <th className="py-2">기분</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ACTIVITY_SLOTS.map((slot, sIdx) => (
+                  <React.Fragment key={sIdx}>
+                    {Array.from({ length: slot.end - slot.start }).map((_, hIdx) => {
+                      const hour = slot.start + hIdx;
+                      const session = getSessionForHour(hour);
+                      return (
+                        <tr key={hIdx} className="border-b border-gray-100 last:border-0 h-10">
+                          {hIdx === 0 && (
+                            <td rowSpan={slot.end - slot.start} className="bg-gray-50 text-center font-black text-gray-900 border-r border-gray-200">
+                              {slot.label}
+                            </td>
+                          )}
+                          <td className="text-center text-gray-400 border-r border-gray-100">
+                            {hour}~{hour + 1}시
+                          </td>
+                          <td className={`px-4 font-bold text-gray-600 ${session ? 'bg-[#FEF9C3]' : ''}`}>
+                            {session?.activity || ''}
+                          </td>
+                          <td className={`text-center font-black text-[#6366F1] ${session ? 'bg-[#FEF9C3]' : ''}`}>
+                            {session ? Number(session.moodScore).toFixed(0) : ''}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="bg-white rounded-[32px] shadow-sm border-2 border-primary/20 overflow-hidden">
-          <table className="w-full border-collapse text-center text-[12px]">
-            <thead>
-              <tr className="bg-primary/30 text-gray-900 font-bold border-b-2 border-primary/20">
-                <th className="py-4 px-2 border-r border-primary/10 w-20">날짜/시간</th>
-                <th className="py-4 px-4 border-r border-primary/10">활동 및 상담 내용</th>
-                <th className="py-4 px-2">기분</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-800 font-medium">
-              {sortedRecords.length > 0 ? (
-                sortedRecords.slice(0, 15).map((row, i) => (
-                  <tr key={i} className="border-b border-primary/10 last:border-0 h-16 odd:bg-primary/5">
-                    <td className="text-[10px] leading-tight font-bold text-gray-400 border-r border-primary/10 px-2">
-                      {new Date(row.id).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}<br />{row.time}
-                    </td>
-                    <td className="text-left px-4 text-xs leading-relaxed font-bold">
-                      {row.activity || row.title}
-                    </td>
-                    <td className="font-black text-primary-dark drop-shadow-sm px-2 text-sm">
-                      {row.moodScore !== null ? Number(row.moodScore).toFixed(1) : '-'}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={3} className="py-20 text-gray-300 font-bold">기록된 데이터가 없습니다.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* 상세 기록 카드 섹션 */}
+        <div className="grid grid-cols-2 gap-4">
+          <button 
+            onClick={() => {
+              const morningSession = userRecords.find(s => s.dateKey === getDateKey(selectedDate) && s.hour < 12 && (s.title.includes('아침') || s.title.includes('상담')));
+              setSelectedDetailSession(morningSession || null);
+              setShowSessionModal(true);
+            }}
+            className="bg-white rounded-[40px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center space-y-3 active:scale-95 transition-all text-left"
+          >
+            <div className="w-12 h-12 bg-[#FEF9C3] rounded-full mx-auto" />
+            <div className="text-center">
+              <h4 className="font-black text-gray-900 text-sm">아침 세션 상세 기록</h4>
+              <p className="text-[10px] font-bold text-gray-400">오전 기록 조회</p>
+            </div>
+          </button>
+          
+          <button 
+            onClick={() => {
+              const eveningSession = userRecords.find(s => s.dateKey === getDateKey(selectedDate) && s.hour >= 18 && (s.title.includes('저녁') || s.title.includes('회고')));
+              setSelectedDetailSession(eveningSession || null);
+              setShowSessionModal(true);
+            }}
+            className="bg-white rounded-[40px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center space-y-3 active:scale-95 transition-all text-left"
+          >
+            <div className="w-12 h-12 bg-[#FEF9C3] rounded-full mx-auto" />
+            <div className="text-center">
+              <h4 className="font-black text-gray-900 text-sm">저녁 세션 상세 기록</h4>
+              <p className="text-[10px] font-bold text-gray-400">저녁 회고 조회</p>
+            </div>
+          </button>
         </div>
       </div>
     );
@@ -224,6 +387,10 @@ export default function TherapyPage() {
   const ActivityView = () => {
     const validScores = userRecords.filter(s => s.moodScore !== null).map(s => Number(s.moodScore));
     const avgScore = validScores.length > 0 ? (validScores.reduce((a, b) => a + b, 0) / validScores.length) : 0;
+
+    const goodCount = userRecords.filter(s => s.moodScore !== null && Number(s.moodScore) >= 7).length;
+    const neutralCount = userRecords.filter(s => s.moodScore !== null && Number(s.moodScore) >= 4 && Number(s.moodScore) < 7).length;
+    const badCount = userRecords.filter(s => s.moodScore !== null && Number(s.moodScore) < 4).length;
 
     const progStart = getProgramStart(userRecords);
     const weekStart = new Date(progStart);
@@ -238,14 +405,99 @@ export default function TherapyPage() {
       return { date: d, avg: dayAvg };
     });
 
-    const getMoodColor = (score: number | null) => {
-      if (score === null) return 'bg-gray-100';
-      if (score >= 8) return 'bg-emerald-400';
-      if (score >= 6) return 'bg-lime-400';
-      if (score >= 4) return 'bg-amber-400';
-      return 'bg-rose-400';
-    };
+    return (
+      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8 bg-[#F8FAFC] pb-32">
+        {/* 평균 기분 점수 카드 */}
+        <div className="bg-white rounded-[40px] p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-center space-y-6">
+          <div className="relative w-48 h-24 mx-auto">
+            <svg viewBox="0 0 100 55" className="w-full h-full">
+              <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#F1F5F9" strokeWidth="10" strokeLinecap="round" />
+              <motion.path
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: avgScore / 10 }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
+                d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#EAB308" strokeWidth="10" strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
+              <span className="text-xs font-black text-[#94A3B8] mb-1">선택한 기간의 평균 기분 점수</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-5xl font-black text-[#475569] tracking-tighter">{avgScore.toFixed(1)}</span>
+                <span className="text-xl font-black text-[#CBD5E1]">/10</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-sm font-bold text-[#94A3B8]">활동 기록 기반 데이터가 부족합니다.</p>
+          
+          <div className="h-px bg-[#F1F5F9] w-full" />
 
+          {/* 기분 통계 요약 */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <div className="w-12 h-12 bg-[#FEF9C3] rounded-full mx-auto" />
+              <div className="text-[11px] font-black text-[#94A3B8]">좋음</div>
+              <div className="text-xl font-black text-[#475569]">{goodCount}</div>
+            </div>
+            <div className="space-y-2">
+              <div className="w-12 h-12 bg-[#F1F5F9] rounded-full mx-auto" />
+              <div className="text-[11px] font-black text-[#94A3B8]">보통</div>
+              <div className="text-xl font-black text-[#475569]">{neutralCount}</div>
+            </div>
+            <div className="space-y-2">
+              <div className="w-12 h-12 bg-[#F1F5F9] rounded-full mx-auto" />
+              <div className="text-[11px] font-black text-[#94A3B8]">나쁨</div>
+              <div className="text-xl font-black text-[#475569]">{badCount}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 기분 기록 달력 */}
+        <div className="bg-white rounded-[40px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
+          <div className="flex justify-between items-center px-2">
+            <h3 className="font-black text-[#475569] text-xl">기분 기록</h3>
+            <div className="flex items-center gap-6">
+              <button onClick={() => setLedgerWeek(prev => Math.max(1, prev - 1))}><ChevronLeft size={20} className="text-[#CBD5E1]" /></button>
+              <span className="text-sm font-black text-[#6366F1] underline underline-offset-4">{ledgerWeek}주차</span>
+              <button onClick={() => setLedgerWeek(prev => prev + 1)}><ChevronRight size={20} className="text-[#CBD5E1]" /></button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-7 gap-1">
+            {weekDays.map((day, i) => (
+              <div key={i} className="flex flex-col items-center gap-3">
+                <span className="text-[11px] font-black text-[#94A3B8]">{['월', '화', '수', '목', '금', '토', '일'][i]}</span>
+                <span className="text-[10px] font-black text-[#CBD5E1]">N/A</span>
+                <div className={`w-10 h-10 rounded-full transition-all ${day.avg ? 'bg-[#FEF9C3]' : 'bg-[#F1F5F9]'}`} />
+                <span className="text-[10px] font-black text-[#CBD5E1]">{day.date.getMonth() + 1}/{day.date.getDate()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 활동 일정 관리 */}
+        <div className="bg-white rounded-[40px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
+          <div className="flex justify-between items-center px-2">
+            <h3 className="font-black text-[#475569] text-xl">활동 일정 관리</h3>
+            <button className="text-xs font-black text-[#94A3B8] border border-[#F1F5F9] px-4 py-2 rounded-xl">관리</button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2 px-2">
+            {ACTIVITY_BANK.map((act, i) => (
+              <button key={i} className="px-6 py-3 bg-[#EEF2FF] rounded-[24px] text-xs font-black text-[#6366F1] hover:bg-[#FEF9C3] hover:text-[#EAB308] transition-all">
+                {act.name}
+              </button>
+            ))}
+            <button className="px-8 py-3 bg-white border-2 border-dashed border-[#6366F1] rounded-[24px] text-[13px] font-black text-[#6366F1] active:scale-95 transition-all">
+              + 추가
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // --- GratitudeView ---
+  const GratitudeView = () => {
     const handleSaveGratitude = () => {
       if (!gratitudeInput.trim()) return;
       const newEntry: GratitudeEntry = {
@@ -262,175 +514,26 @@ export default function TherapyPage() {
       setGratitudeStars(0);
     };
 
-    const completeActivity = (id: number) => {
-      setCurrentSatisfactionId(id);
-      setShowSatisfactionModal(true);
-    };
-
-    const handleSaveSatisfaction = () => {
-      if (currentSatisfactionId === null) return;
-
-      const updatedScheduled = scheduledActivities.map(a =>
-        a.id === currentSatisfactionId ? { ...a, satisfaction: satisfactionScore } : a
-      );
-      setScheduledActivities(updatedScheduled);
-      syncData('scheduled_activities', updatedScheduled);
-
-      const target = scheduledActivities.find(x => x.id === currentSatisfactionId);
-      if (target) {
-        const newSession: Session = {
-          id: Date.now(),
-          title: '활동 완료',
-          time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-          hour: new Date().getHours(),
-          summary: `${target.name} 완료`,
-          activity: target.name,
-          moodScore: satisfactionScore,
-          dateKey: getDateKey(new Date()),
-        };
-        const updatedSessions = [newSession, ...userRecords];
-        setUserRecords(updatedSessions);
-        syncData('hrv_sessions', updatedSessions);
-      }
-
-      setShowSatisfactionModal(false);
-      setCurrentSatisfactionId(null);
-    };
-
     return (
       <div className="flex-1 overflow-y-auto px-4 py-8 space-y-6 bg-white pb-32">
         <div className="text-center space-y-1">
-          <h2 className="text-2xl font-black text-gray-900 tracking-tighter">오늘의 자기관리</h2>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tighter">감사 일기</h2>
           <div className="w-12 h-1 bg-primary mx-auto rounded-full" />
         </div>
 
-        {/* 무드 게이지 */}
-        <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm">
-          <div className="flex flex-col items-center">
-            <div className="relative w-48 h-24 mb-6">
-              <svg viewBox="0 0 100 55" className="w-full h-full">
-                <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#F1F3F9" strokeWidth="8" strokeLinecap="round" />
-                <motion.path
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: avgScore / 10 }}
-                  transition={{ duration: 1.5, ease: 'easeOut' }}
-                  d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="url(#gaugeGradient)" strokeWidth="8" strokeLinecap="round"
-                />
-                <defs>
-                  <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#FB7185" />
-                    <stop offset="50%" stopColor="#FBBF24" />
-                    <stop offset="100%" stopColor="#34D399" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <motion.div
-                className="absolute bottom-0 left-1/2 w-1.5 h-20 bg-gray-900 rounded-full origin-bottom"
-                initial={{ rotate: -90 }}
-                animate={{ rotate: (avgScore / 10) * 180 - 90 }}
-                transition={{ duration: 1.5, ease: 'easeOut' }}
-                style={{ translateX: '-50%' }}
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-end pb-3">
-                <span className="text-4xl font-black text-gray-900 tracking-tighter">{avgScore.toFixed(1)}</span>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Avg Mood</span>
-              </div>
-            </div>
-            <p className="text-sm font-bold text-gray-400 text-center leading-relaxed">
-              {avgScore >= 7 ? '전반적으로 아주 안정적인 상태입니다.' : avgScore >= 4 ? '기분 전환을 위해 오늘 추천 활동을 해보세요.' : '마음이음과 더 깊은 대화가 필요한 시간이에요.'}
-            </p>
-          </div>
-        </div>
-
-        {/* 기분 달력 */}
-        <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <span className="font-black text-gray-900 text-lg">기분 달력</span>
-            <div className="flex items-center gap-4 bg-gray-50 px-3 py-1.5 rounded-2xl">
-              <button onClick={() => setLedgerWeek(prev => Math.max(1, prev - 1))}><ChevronLeft size={16} /></button>
-              <span className="text-xs font-black text-primary-dark">{ledgerWeek}주차</span>
-              <button onClick={() => setLedgerWeek(prev => prev + 1)}><ChevronRight size={16} /></button>
-            </div>
-          </div>
-          <div className="grid grid-cols-7 gap-3">
-            {weekDays.map((day, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <span className="text-[10px] font-black text-gray-400">{['월', '화', '수', '목', '금', '토', '일'][i]}</span>
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm transition-all ${getMoodColor(day.avg)}`}>
-                  <span className="text-white font-black text-xs">{day.avg ? day.avg.toFixed(0) : ''}</span>
-                </div>
-                <span className="text-[9px] font-bold text-gray-300">{day.date.getDate()}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 활동 인사이트 */}
-        {avgScore >= 7 && (
-          <div className="bg-secondary/50 rounded-[40px] p-8 border-2 border-primary/30 flex items-center gap-6">
-            <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-3xl shadow-sm border border-primary/10">🏃</div>
-            <div className="flex-1">
-              <p className="text-xs font-bold text-gray-400 mb-1">나를 행복하게 만든 활동</p>
-              <h4 className="font-black text-gray-900 text-lg leading-tight tracking-tighter">기분이 좋았던 날,<br />주로 <span className="text-primary-dark underline underline-offset-4">산책</span>을 하셨네요!</h4>
-            </div>
-          </div>
-        )}
-
-        {/* 활동 일정 관리 */}
         <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="font-black text-gray-900 text-lg">활동 일정 관리</h3>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {ACTIVITY_BANK.map((act, i) => (
-              <button key={i} className="px-4 py-2.5 bg-gray-50 rounded-2xl text-xs font-bold text-gray-600 hover:bg-primary/20 active:scale-95 transition-all">
-                {act.name}
-              </button>
-            ))}
-            <button className="w-10 h-10 border-2 border-dashed border-primary-dark rounded-2xl flex items-center justify-center text-primary-dark"><Plus size={18} /></button>
-          </div>
-
-          <div className="space-y-3 pt-4">
-            {scheduledActivities.length > 0 ? (
-              scheduledActivities.map((sa, i) => (
-                <div key={i} className="bg-gray-50 p-4 rounded-3xl flex items-center gap-4 group">
-                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm">{sa.emoji}</div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-black text-gray-900">{sa.name}</span>
-                      {sa.satisfaction && <div className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[9px] font-black rounded-full">{sa.satisfaction} pt</div>}
-                    </div>
-                    <p className="text-[10px] font-bold text-gray-400">{sa.scheduledTime} · {sa.dateKey.split('-')[2]}일</p>
-                  </div>
-                  {sa.satisfaction === null ? (
-                    <button onClick={() => completeActivity(sa.id)} className="bg-gray-900 text-white px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95">완료</button>
-                  ) : (
-                    <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500"><Check size={20} /></div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-300 font-bold text-center py-4">위에서 활동을 선택해 일정을 추가해보세요!</p>
-            )}
-          </div>
-        </div>
-
-        {/* 감사 일기 */}
-        <div className="bg-white rounded-[40px] p-8 border-2 border-primary/20 shadow-sm space-y-6">
-          <h3 className="font-black text-gray-900 text-lg">감사 일기</h3>
           <div className="space-y-4">
             <textarea
               value={gratitudeInput}
               onChange={(e) => setGratitudeInput(e.target.value)}
               placeholder="오늘 감사했던 따뜻한 순간을 적어보세요..."
-              className="w-full h-32 bg-gray-50 border-none rounded-[32px] p-6 text-sm font-medium focus:ring-2 focus:ring-primary/50 outline-none resize-none"
+              className="w-full h-32 bg-gray-50 border-none rounded-[32px] p-6 text-sm font-bold focus:ring-2 focus:ring-primary/50 outline-none resize-none"
             />
             <div className="flex items-center justify-between pt-2">
               <div className="flex gap-1.5">
                 {[1, 2, 3, 4, 5].map(star => (
                   <button key={star} onClick={() => setGratitudeStars(star)}>
-                    <Star size={24} className={star <= gratitudeStars ? 'text-amber-400 fill-current' : 'text-gray-200'} />
+                    <Star size={24} className={star <= gratitudeStars ? 'text-amber-400 fill-current ml-1' : 'text-gray-200 ml-1'} />
                   </button>
                 ))}
               </div>
@@ -454,31 +557,11 @@ export default function TherapyPage() {
                 <button className="absolute bottom-4 right-4 text-gray-200 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={16} /></button>
               </div>
             ))}
+            {gratitudeEntries.length === 0 && (
+              <p className="text-gray-300 font-bold text-center py-10">첫 번째 감사 일기를 작성해 보세요!</p>
+            )}
           </div>
         </div>
-
-        {/* 만족도 모달 */}
-        {showSatisfactionModal && (
-          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[48px] p-10 w-full max-w-sm text-center shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
-              <h3 className="text-2xl font-black text-gray-900 mb-2">활동 완료!</h3>
-              <p className="text-sm font-bold text-gray-400 mb-8">활동 후 기분은 어떠신가요?</p>
-              <div className="space-y-6 mb-10">
-                <div className="flex justify-between text-[10px] font-black text-gray-300 uppercase tracking-widest px-2">
-                  <span>Worst</span>
-                  <span>Great</span>
-                </div>
-                <input type="range" min="0" max="10" step="1" value={satisfactionScore} onChange={(e) => setSatisfactionScore(parseInt(e.target.value))} className="w-full accent-primary" />
-                <div className="text-6xl font-black text-gray-900 tracking-tighter">{satisfactionScore}</div>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setShowSatisfactionModal(false)} className="flex-1 py-4 font-black text-gray-400">취소</button>
-                <button onClick={handleSaveSatisfaction} className="flex-1 py-4 bg-primary rounded-3xl font-black text-gray-900 shadow-lg">점수 저장</button>
-              </div>
-            </motion.div>
-          </div>
-        )}
       </div>
     );
   };
@@ -487,23 +570,25 @@ export default function TherapyPage() {
     <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col font-sans relative overflow-hidden">
       {!sessionStarted ? (
         <>
-          {/* 세션 선택 탭 */}
-          <div className="px-6 pt-10 pb-6 flex justify-center sticky top-0 bg-white/80 backdrop-blur-md z-30">
-            <div className="bg-secondary rounded-[28px] p-2 flex w-full shadow-inner border-2 border-primary/20 font-bold">
-              <button
-                onClick={() => setSelectedSession('morning')}
-                className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'morning' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
-              >
-                아침 세션
-              </button>
-              <button
-                onClick={() => setSelectedSession('evening')}
-                className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'evening' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
-              >
-                저녁 세션
-              </button>
+          {/* 세션 선택 탭 - 활동(therapy) 탭에서만 노출 */}
+          {activeTab === 'therapy' && (
+            <div className="px-6 pt-10 pb-6 flex justify-center sticky top-0 bg-white/80 backdrop-blur-md z-30">
+              <div className="bg-secondary rounded-[28px] p-2 flex w-full shadow-inner border-2 border-primary/20 font-bold">
+                <button
+                  onClick={() => setSelectedSession('morning')}
+                  className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'morning' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
+                >
+                  아침 세션
+                </button>
+                <button
+                  onClick={() => setSelectedSession('evening')}
+                  className={`flex-1 py-4 rounded-[22px] font-black text-lg flex items-center justify-center gap-2 transition-all ${selectedSession === 'evening' ? 'bg-white text-gray-900 shadow-sm border border-primary/10' : 'text-gray-400'}`}
+                >
+                  저녁 세션
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <AnimatePresence mode="wait">
             {activeTab === 'therapy' && (
@@ -514,7 +599,7 @@ export default function TherapyPage() {
               >
                 <div className="flex flex-col items-center">
                   <div className="w-80 h-48 flex items-center justify-center -mb-4">
-                    <Image src="/logo.svg" alt="마음이음 로고" width={320} height={160} className="object-contain" priority />
+                    <Image src="/maeum_logo_final.png" alt="마음이음 로고" width={320} height={160} className="object-contain" priority />
                   </div>
                 </div>
                 <div className="text-center space-y-4 px-8">
@@ -548,6 +633,12 @@ export default function TherapyPage() {
                 <ActivityView />
               </motion.div>
             )}
+
+            {activeTab === 'gratitude' && (
+              <motion.div key="gratitude-view" className="flex-1 flex flex-col pt-4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <GratitudeView />
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* 하단 네비게이션 */}
@@ -557,18 +648,22 @@ export default function TherapyPage() {
               <span className="text-[10px] font-black text-gray-400">홈</span>
             </div>
             <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('therapy')}>
-              <div className={`p-4 rounded-full shadow-2xl -mt-10 border-4 border-white transition-all ${activeTab === 'therapy' ? 'bg-primary' : 'bg-gray-100'}`}>
-                <MessageCircle size={28} className={activeTab === 'therapy' ? 'text-gray-900' : 'text-gray-400'} />
+              <div className={`p-4 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] -mt-10 border-4 border-white transition-all ${activeTab === 'therapy' ? 'bg-[#94A3B8]' : 'bg-[#F1F5F9]'}`}>
+                <MessageCircle size={28} className={activeTab === 'therapy' ? 'text-white' : 'text-[#94A3B8]'} />
               </div>
-              <span className={`text-[10px] font-black ${activeTab === 'therapy' ? 'text-gray-900' : 'text-gray-400'}`}>활동</span>
+              <span className={`text-[10px] font-black ${activeTab === 'therapy' ? 'text-[#64748B]' : 'text-[#94A3B8]'}`}>활동</span>
             </div>
             <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('record')}>
-              <TrendingUp size={24} className={activeTab === 'record' ? 'text-primary-dark' : 'text-gray-400'} />
-              <span className={`text-[10px] font-black ${activeTab === 'record' ? 'text-gray-900' : 'text-gray-400'}`}>기록</span>
+              <ClipboardList size={24} className={activeTab === 'record' ? 'text-[#64748B]' : 'text-[#94A3B8]'} />
+              <span className={`text-[10px] font-black ${activeTab === 'record' ? 'text-[#64748B]' : 'text-[#94A3B8]'}`}>기특</span>
             </div>
             <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('activity')}>
-              <Heart size={24} className={activeTab === 'activity' ? 'text-primary-dark' : 'text-gray-400'} fill={activeTab === 'activity' ? 'currentColor' : 'none'} />
-              <span className={`text-[10px] font-black ${activeTab === 'activity' ? 'text-gray-900' : 'text-gray-400'}`}>자기관리</span>
+              <TrendingUp size={24} className={activeTab === 'activity' ? 'text-[#EAB308]' : 'text-[#94A3B8]'} />
+              <span className={`text-[10px] font-black ${activeTab === 'activity' ? 'text-gray-900' : 'text-[#94A3B8]'}`}>자기관리</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => setActiveTab('gratitude')}>
+              <Heart size={24} className={activeTab === 'gratitude' ? 'text-[#64748B]' : 'text-[#94A3B8]'} fill={activeTab === 'gratitude' ? 'currentColor' : 'none'} />
+              <span className={`text-[10px] font-black ${activeTab === 'gratitude' ? 'text-[#64748B]' : 'text-[#94A3B8]'}`}>감사일기</span>
             </div>
           </div>
         </>
@@ -597,7 +692,7 @@ export default function TherapyPage() {
             </button>
           </header>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 space-y-10 py-10 bg-white scroll-smooth pb-40">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 space-y-10 py-10 bg-white scroll-smooth pb-52">
             <AnimatePresence initial={false}>
               {messages.filter(m => m.role !== 'system').map((msg, idx) => (
                 <motion.div key={idx} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -617,18 +712,157 @@ export default function TherapyPage() {
             </AnimatePresence>
           </div>
 
-          <footer className="bg-white/90 backdrop-blur-xl p-6 border-t border-gray-100 pb-12 z-20 absolute bottom-0 left-0 right-0">
-            <div className="flex justify-center py-2">
-              <button onClick={() => setSessionStarted(false)} className="flex flex-col items-center gap-3 active:scale-90 transition-transform">
-                <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-white shadow-[0_12px_24px_rgba(239,68,68,0.4)] border-8 border-white">
-                  <Phone size={28} className="rotate-[135deg]" />
-                </div>
-                <span className="font-black text-red-500 text-base uppercase tracking-widest">End Call</span>
+          <footer className="bg-white/90 backdrop-blur-xl p-4 border-t border-gray-100 z-20 absolute bottom-0 left-0 right-0 flex flex-col gap-3 pb-8">
+            {suggestedChoices && suggestedChoices.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1">
+                {suggestedChoices.map((choice, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => sendMessage(choice.text)}
+                    className="flex-shrink-0 bg-[#FEF9C3] text-[#854d0e] px-5 py-3 rounded-[20px] font-bold text-sm shadow-sm active:scale-95 transition-transform border border-[#FEF9C3]"
+                  >
+                    {choice.label || choice.text}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setSessionStarted(false)} 
+                className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 flex-shrink-0 shadow-sm active:scale-90 transition-transform"
+                title="상담 종료"
+              >
+                <Phone size={20} className="rotate-[135deg]" />
               </button>
+              
+              <div className="flex-1 bg-gray-50 rounded-full flex items-center px-4 py-2 border border-gray-200">
+                <input 
+                  type="text" 
+                  id="chatInput"
+                  placeholder="메시지를 입력하세요..." 
+                  className="flex-1 bg-transparent border-none outline-none text-sm font-bold text-gray-900 placeholder-gray-400 py-2"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      sendMessage(e.currentTarget.value);
+                      e.currentTarget.value = '';
+                    }
+                  }}
+                />
+                <button 
+                  onClick={(e) => {
+                    const input = document.getElementById('chatInput') as HTMLInputElement;
+                    if (input && input.value) {
+                      sendMessage(input.value);
+                      input.value = '';
+                    }
+                  }}
+                  className="w-8 h-8 bg-[#FEF9C3] rounded-full flex items-center justify-center text-[#854d0e] ml-2"
+                >
+                  <Send size={16} />
+                </button>
+              </div>
             </div>
           </footer>
         </div>
       )}
+
+      {/* 만족도 모달 */}
+      <AnimatePresence>
+        {showSatisfactionModal && (
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-[48px] p-10 w-full max-w-sm text-center shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
+              <h3 className="text-2xl font-black text-gray-900 mb-2">활동 완료!</h3>
+              <p className="text-sm font-bold text-gray-400 mb-8">활동 후 기분은 어떠신가요?</p>
+              <div className="space-y-6 mb-10">
+                <div className="flex justify-between text-[10px] font-black text-gray-300 uppercase tracking-widest px-2">
+                  <span>Worst</span>
+                  <span>Great</span>
+                </div>
+                <input type="range" min="0" max="10" step="1" value={satisfactionScore} onChange={(e) => setSatisfactionScore(parseInt(e.target.value))} className="w-full accent-primary" />
+                <div className="text-6xl font-black text-gray-900 tracking-tighter">{satisfactionScore}</div>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setShowSatisfactionModal(false)} className="flex-1 py-4 font-black text-gray-400">취소</button>
+                <button onClick={handleSaveSatisfaction} className="flex-1 py-4 bg-primary rounded-3xl font-black text-gray-900 shadow-lg">점수 저장</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 세션 상세 모달 */}
+      <AnimatePresence>
+        {showSessionModal && (
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-[110] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ y: 50, opacity: 0 }} 
+              animate={{ y: 0, opacity: 1 }} 
+              exit={{ y: 50, opacity: 0 }} 
+              className="bg-[#F8FAFC] rounded-[48px] w-full max-w-sm h-[80vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <header className="p-8 bg-white border-b border-gray-100 flex justify-between items-center">
+                <div className="flex flex-col">
+                  <h3 className="text-xl font-black text-gray-900">{selectedDetailSession?.title || '세션 기록'}</h3>
+                  <p className="text-xs font-bold text-gray-400">{selectedDetailSession?.time || '시간 정보 없음'}</p>
+                </div>
+                <button onClick={() => setShowSessionModal(false)} className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 active:scale-90 transition-all">
+                  <Plus size={24} className="rotate-45" />
+                </button>
+              </header>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {selectedDetailSession ? (
+                  <>
+                    <div className="bg-white rounded-3xl p-6 border border-gray-100 space-y-2">
+                      <span className="text-[10px] font-black text-[#6366F1] uppercase tracking-widest">Summary</span>
+                      <p className="text-sm font-bold text-gray-600 leading-relaxed">{selectedDetailSession.summary}</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Dialogue</span>
+                      {selectedDetailSession.fullText ? (
+                        selectedDetailSession.fullText.split('\n').filter(line => line.trim()).map((line, idx) => {
+                          const isAI = line.startsWith('앨리:') || line.startsWith('마음이음:');
+                          const content = line.includes(':') ? line.split(':')[1].trim() : line;
+                          return (
+                            <div key={idx} className={`flex ${isAI ? 'justify-start' : 'justify-end'}`}>
+                              <div className={`max-w-[85%] p-4 rounded-3xl text-sm font-bold leading-relaxed ${isAI ? 'bg-white text-gray-800 rounded-tl-none border border-gray-100' : 'bg-gray-900 text-white rounded-tr-none'}`}>
+                                {content}
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-20">
+                          <p className="text-sm font-bold text-gray-300">상세 대화 기록이 없습니다.</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 py-20 px-8">
+                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-gray-300">
+                      <TrendingUp size={32} />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-gray-900">기록된 데이터가 없어요</h4>
+                      <p className="text-xs font-bold text-gray-400 mt-1 leading-relaxed">선택하신 날짜에 상담 세션을 진행하시면 여기에 기록이 나타납니다.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <footer className="p-8 bg-white border-t border-gray-100">
+                <button onClick={() => setShowSessionModal(false)} className="w-full py-5 bg-[#FEF9C3] rounded-3xl font-black text-[#854d0e] shadow-lg active:scale-[0.98] transition-all">
+                  닫기
+                </button>
+              </footer>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

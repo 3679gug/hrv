@@ -12,7 +12,7 @@ export default function Home() {
 
   const handleStart = (type: string) => {
     localStorage.setItem('flow_type', type);
-    router.push('/profile');
+    router.push('/measure');
   };
 
   return (
@@ -27,17 +27,14 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Options Section - 카드 크기만 이미지 비율(aspect-[2/3])로 조정 */}
-      <section className="px-6 pb-12 pt-4">
+      {/* Options Section - 기존 디자인 복원 */}
+      <section className="px-6 pb-20 pt-4 space-y-10">
         <motion.div
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
            transition={{ duration: 0.8 }}
         >
-          <button 
-            onClick={() => handleStart('3')} 
-            className="w-full relative overflow-hidden group bg-primary rounded-[60px] aspect-[2/3.8] p-12 shadow-2xl active:scale-[0.98] transition-all text-left flex flex-col justify-between border-8 border-white/50"
-          >
+          <div className="w-full relative overflow-hidden group bg-primary rounded-[60px] aspect-[2/3.1] p-12 shadow-2xl transition-all text-left flex flex-col justify-between border-8 border-white/50">
             <div className="relative z-10 pt-10">
               <div className="space-y-8">
                 <h3 className="text-7xl font-black text-gray-900 leading-[1] tracking-tighter">
@@ -50,13 +47,23 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative z-10 flex items-center group">
-              <div className="flex items-center gap-6 text-gray-900 font-black text-3xl bg-white/90 backdrop-blur-sm px-10 py-6 rounded-full shadow-2xl shrink-0">
-                 <span>지금 시작</span>
-                 <ArrowRight size={36} className="group-hover:translate-x-4 transition-transform" />
-              </div>
+            <div className="relative z-10 flex flex-col gap-4">
+              <button 
+                onClick={() => handleStart('3')}
+                className="flex items-center justify-between text-gray-900 font-black text-2xl bg-white/90 backdrop-blur-sm px-10 py-6 rounded-full shadow-2xl active:scale-95 transition-all w-full"
+              >
+                <span>진단하기</span>
+                <ArrowRight size={32} />
+              </button>
+              <button 
+                onClick={() => router.push('/therapy')}
+                className="flex items-center justify-between text-[#854d0e] font-black text-2xl bg-[#FEF9C3]/90 backdrop-blur-sm px-10 py-6 rounded-full shadow-2xl active:scale-95 transition-all w-full"
+              >
+                <span>치료하기</span>
+                <ArrowRight size={32} />
+              </button>
             </div>
-          </button>
+          </div>
         </motion.div>
 
         <p className="text-center text-[11px] text-gray-900 mt-12 font-bold tracking-tight px-8 leading-relaxed italic opacity-80">
