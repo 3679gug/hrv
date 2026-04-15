@@ -1,10 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { ChevronLeft, User, Sparkles, Heart, ClipboardCheck, ArrowRight } from 'lucide-react';
+import { ChevronLeft, User, Heart, Activity, ArrowRight, Zap, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
-
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
@@ -16,61 +14,78 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-12 max-w-md mx-auto relative overflow-hidden">
-      {/* Header - 제목 제거 */}
-      <header className="p-8 flex justify-between items-center bg-background sticky top-0 z-10 bg-opacity-80 backdrop-blur-md">
-        <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full text-gray-900 hover:bg-gray-100 transition-colors">
-          <ChevronLeft size={32} strokeWidth={3} />
-        </button>
-        <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm">
-          <User className="w-full h-full p-2 text-gray-400" />
-        </div>
-      </header>
+    <main>
+      {/* 폰 베젤 틀(main) 내부로 모든 요소를 가둡니다 */}
+      <div className="h-full w-full bg-white text-gray-900 pb-12 relative flex flex-col font-sans">
+        {/* 상단바: 고정 연노란색 */}
+        <header className="absolute top-0 left-0 right-0 h-12 px-6 flex justify-between items-center border-b border-yellow-100 z-50" style={{ backgroundColor: 'var(--primary)' }}>
+          <button onClick={() => router.back()} className="text-gray-900/80 p-0.5">
+            <ChevronLeft size={18} strokeWidth={2.5} />
+          </button>
+          <span className="text-xs font-black tracking-tight">9:41</span>
+          <div className="w-5" />
+        </header>
 
-      {/* Options Section - 기존 디자인 복원 */}
-      <section className="px-6 pb-20 pt-4 space-y-10">
-        <motion.div
-           initial={{ opacity: 0, scale: 0.95 }}
-           animate={{ opacity: 1, scale: 1 }}
-           transition={{ duration: 0.8 }}
-        >
-          <div className="w-full relative overflow-hidden group bg-primary rounded-[60px] aspect-[2/3.1] p-12 shadow-2xl transition-all text-left flex flex-col justify-between border-8 border-white/50">
-            <div className="relative z-10 pt-10">
-              <div className="space-y-8">
-                <h3 className="text-7xl font-black text-gray-900 leading-[1] tracking-tighter">
-                  마음 이음
-                </h3>
-                <div className="w-24 h-3 bg-gray-900/10 rounded-full" />
-                <p className="text-gray-900 font-black text-3xl leading-relaxed">
-                  마음보기의 시작
-                </p>
+        <div className="flex-1 overflow-y-auto px-5 pt-14 pb-4 space-y-4 scrollbar-hide">
+          {/* 환영 카드: 고정 연노란색 */}
+          <motion.section 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="w-full rounded-[28px] p-6 border-4 border-yellow-100 shadow-xl shadow-yellow-500/5"
+            style={{ backgroundColor: 'var(--primary)' }}
+          >
+            <div className="text-[10px] font-black text-gray-400 mb-1 tracking-widest uppercase">마음 이음</div>
+            <h1 className="text-xl font-black text-gray-900 leading-[1.3] mb-3 break-keep">
+              안녕하세요, 김민준님<br />
+              오늘도 함께 해봐요
+            </h1>
+
+            <div className="flex items-center gap-3">
+              <div className="text-2xl font-black text-gray-900">12</div>
+              <div className="text-gray-900/60 font-bold leading-tight underline decoration-yellow-200 decoration-4 underline-offset-4">
+                일 연속 훈련 중<br />
+                <span className="text-[10px] opacity-60 font-bold tracking-tight">어제도 잘 하셨어요!</span>
               </div>
             </div>
+          </motion.section>
 
-            <div className="relative z-10 flex flex-col gap-4">
-              <button 
-                onClick={() => handleStart('3')}
-                className="flex items-center justify-between text-gray-900 font-black text-2xl bg-white/90 backdrop-blur-sm px-10 py-6 rounded-full shadow-2xl active:scale-95 transition-all w-full"
-              >
-                <span>진단하기</span>
-                <ArrowRight size={32} />
-              </button>
-              <button 
-                onClick={() => router.push('/therapy')}
-                className="flex items-center justify-between text-[#854d0e] font-black text-2xl bg-[#FEF9C3]/90 backdrop-blur-sm px-10 py-6 rounded-full shadow-2xl active:scale-95 transition-all w-full"
-              >
-                <span>치료하기</span>
-                <ArrowRight size={32} />
-              </button>
-            </div>
+          {/* 메뉴 리스트 */}
+          <div className="w-full space-y-3">
+            <button 
+              onClick={() => handleStart('3')}
+              className="w-full bg-white border-2 border-gray-50 rounded-[24px] p-5 flex items-center justify-start group active:scale-95 transition-all shadow-sm"
+            >
+              <div className="flex flex-col items-start text-left">
+                <span className="text-lg font-black text-gray-900">진단하기</span>
+                <span className="text-gray-400 font-bold text-xs mt-0.5">자연스럽게 상태 측정</span>
+              </div>
+            </button>
+
+            <button 
+              onClick={() => router.push('/therapy')}
+              className="w-full bg-white border-2 border-gray-50 rounded-[24px] p-5 flex items-center justify-start group active:scale-95 transition-all shadow-sm"
+            >
+              <div className="flex flex-col items-start text-left">
+                <span className="text-lg font-black text-gray-900">치료하기</span>
+                <span className="text-gray-400 font-bold text-xs mt-0.5">나만의 맞춤 상담</span>
+              </div>
+            </button>
           </div>
-        </motion.div>
+        </div>
 
-        <p className="text-center text-[11px] text-gray-900 mt-12 font-bold tracking-tight px-8 leading-relaxed italic opacity-80">
-          * 이 검사는 정밀 HRV 측정과 9문항의 설문을 포함하며, <br />
-          모든 데이터는 기기 내에서만 즉시 분석됩니다.
-        </p>
-      </section>
+        {/* 하단 내비게이션 바 */}
+        <nav className="absolute bottom-0 left-0 right-0 h-14 bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center px-6 z-50">
+          <button onClick={() => router.push('/')} className="flex-1 flex flex-col items-center py-1">
+            <span className="text-xs font-black text-yellow-600/80">홈</span>
+          </button>
+          <button onClick={() => handleStart('3')} className="flex-1 flex flex-col items-center py-1">
+            <span className="text-xs font-black text-gray-400">진단</span>
+          </button>
+          <button onClick={() => router.push('/therapy')} className="flex-1 flex flex-col items-center py-1">
+            <span className="text-xs font-black text-gray-400">치료</span>
+          </button>
+        </nav>
+      </div>
     </main>
   );
 }

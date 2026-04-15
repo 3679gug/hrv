@@ -9,6 +9,9 @@ import io
 import json
 from dotenv import load_dotenv
 from openai import OpenAI
+from supabase import create_client, Client
+import faiss
+from pathlib import Path
 
 import numpy as np
 
@@ -18,10 +21,50 @@ if not hasattr(np, 'trapezoid'):
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
-print(f"DEBUG: OpenAI API Key loaded: {api_key[:8]}...{api_key[-4:] if api_key else 'None'}")
 client = OpenAI(api_key=api_key)
 
+# Supabase 초기화
+supabase_url = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_KEY") or os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
+supabase: Optional[Client] = None
+if supabase_url and supabase_key:
+    try:
+        supabase = create_client(supabase_url, supabase_key)
+        print("DEBUG: Supabase Client Initialized")
+    except Exception as e:
+        print(f"DEBUG: Supabase Init Error: {e}")
+
+# RAG (Knowledge Base) 초기화
+INDEX_FILE = "manual_index.faiss"
+METADATA_FILE = "manual_metadata.json"
+knowledge_index = None
+knowledge_chunks = []
+
+def load_knowledge_base():
+    global knowledge_index, knowledge_chunks
+    # 실행 위치와 D드라이브 루트 위치 모두 확인
+    paths = [Path(INDEX_FILE), Path(r"D:\hrvdata") / INDEX_FILE]
+    meta_paths = [Path(METADATA_FILE), Path(r"D:\hrvdata") / METADATA_FILE]
+    
+    target_idx = next((p for p in paths if p.exists()), None)
+    target_meta = next((p for p in meta_paths if p.exists()), None)
+
+    if target_idx and target_meta:
+        try:
+            knowledge_index = faiss.read_index(str(target_idx))
+            with open(target_meta, 'r', encoding='utf-8') as f:
+                knowledge_chunks = json.load(f)
+            print(f"DEBUG: RAG Knowledge Base Loaded ({len(knowledge_chunks)} chunks)")
+        except Exception as e:
+            print(f"DEBUG: Knowledge Base Load Error: {e}")
+    else:
+        print("DEBUG: Knowledge Base files not found. Running without RAG.")
+
 app = FastAPI(title="HRV Depression Screening API")
+
+@app.on_event("startup")
+def startup():
+    load_knowledge_base()
 
 # Step 1: CORS Setup for Frontend
 app.add_middleware(
@@ -116,10 +159,40 @@ def score_mood(user_input: str) -> Optional[int]:
 
 @app.post("/chat")
 def chat(data: ChatRequest):
-    """OpenAI 기반 어르신 맞춤형 상담 챗봇 (CBT & BA 로직 반영)"""
+    """OpenAI 및 RAG 기반 어르신 맞춤형 상담 챗봇 (시간 인지 능력 강화)"""
     try:
         user_input = data.messages[-1].content if data.messages else ""
         
+        # ── 0. 현재 시간 인지 (KST 기준) ────────────────
+        import datetime
+        now = datetime.datetime.now()
+        current_time_str = now.strftime("%Y-%m-%d %H:%M")
+        current_hour = now.hour
+        
+        # ── 1. RAG 검색 ───────────────────────────────
+        rag_context = ""
+        if knowledge_index and knowledge_chunks:
+            try:
+                # 검색어 강화 (Expansion)
+                expansion_map = {
+                    "끔찍": "distress cognitive distortion catastrophizing",
+                    "최악": "negative thinking depression pessimism",
+                    "힘들어": "depression difficulty coping behavioral activation",
+                    "무기력": "anhedonia loss of motivation behavioral withdrawal",
+                    "우울": "depression behavioral activation CBT treatment",
+                }
+                search_query = user_input
+                for k, v in expansion_map.items():
+                    if k in user_input: search_query += f" {v}"
+
+                emb_res = client.embeddings.create(input=search_query, model="text-embedding-3-small")
+                query_vector = np.array([emb_res.data[0].embedding]).astype('float32')
+                D, I = knowledge_index.search(query_vector, 3)
+                related_docs = [knowledge_chunks[idx] for idx in I[0] if idx < len(knowledge_chunks)]
+                rag_context = "\n\n".join([f"[근거]: {doc}" for doc in related_docs])
+            except Exception as e:
+                print(f"DEBUG: RAG Retrieval Error: {e}")
+
         summary = getattr(data, 'summary_context', None)
         summary_text = summary if summary else "어제 특별한 활동 기록 없음"
 
@@ -129,21 +202,26 @@ def chat(data: ChatRequest):
             f"{SESSION_ARC}\n\n"
             "【핵심 상담 규칙】\n"
             "1. **공감 및 지지**: 사용자의 말에 먼저 충분히 공감해주세요.\n"
-            "2. **이모지 금지**: 어떠한 이모지도 절대 사용하지 마세요. 오직 텍스트로만 따뜻하게 대화하세요.\n"
+            "2. **이모지 제한**: 🌟, ✨ 등 화려한 이모지 금지. 💛, ✅, 🏃 등 차분한 이모지만 최소한 사용.\n"
             "3. **패턴 중심**: 상황 공유 시, 인지적 함정이나 패턴을 명확히 요약해주고 공감을 받으세요.\n"
-            "4. **연속성 유지(전날 활동 질문)**: 제공된 '추가 맥락'을 참고하여 전날 진행했던 활동이 있다면 안부를 물으세요.\n"
+            "4. **연속성 유지**: 제공된 '추가 맥락'을 참고하여 안부를 물으세요.\n"
             "5. **간결성**: 한 번의 답변은 2~3문장 이내로 하세요.\n\n"
-            "【추가 맥락 (전날 기록)】\n"
+            f"【사용자 현재 시간】\n"
+            f"{current_time_str}\n\n"
+            "【추가 맥락 (과거 기록)】\n"
             f"{summary_text}\n\n"
+            "【치료 지식 근거 (CBT 매뉴얼)】\n"
+            f"{rag_context if rag_context else '(일반 가이드라인 적용)'}\n\n"
             "【응답 형식】\n"
             "반드시 아래의 JSON 형식으로만 답변하세요:\n"
             "{\n"
-            "  \"reply\": \"(사용자에게 보낼 따뜻한 상담 메시지)\",\n"
+            "  \"reply\": \"(상담 메시지)\",\n"
             "  \"choices\": [\n"
-            "    {\"emoji\": \"\", \"label\": \"(짧은 버튼 텍스트)\", \"text\": \"(클릭 시 전송될 전체 문장)\"}\n"
-            "  ]\n"
+            "    {\"emoji\": \"...\", \"label\": \"(짧은 버튼)\", \"text\": \"(전체 문장)\"}\n"
+            "  ],\n"
+            "  \"activity_hour\": (방금 대화에서 언급된 활동의 발생 시간대 0~23 정수, 알 수 없으면 현재 시간인 " + str(current_hour) + " 출력)\n"
             "}\n"
-            "- choices는 사용자가 다음에 할 법한 말을 3~4개 생성하세요. emoji는 빈 문자열로 두세요."
+            "- choices는 3~4개 생성하세요."
         )
         
         openai_messages = [{"role": "system", "content": system_content}] + [{"role": m.role, "content": m.content} for m in data.messages]
@@ -158,17 +236,14 @@ def chat(data: ChatRequest):
         res_data = json.loads(response.choices[0].message.content)
         reply = res_data.get("reply", "")
         suggested_choices = res_data.get("choices", [])
+        activity_hour = res_data.get("activity_hour", current_hour) # AI가 추론한 시간
         
         mood_score = score_mood(user_input)
         
         import base64
         audio_base64 = None
         try:
-            tts_res = client.audio.speech.create(
-                model="tts-1",
-                voice="nova",
-                input=reply
-            )
+            tts_res = client.audio.speech.create(model="tts-1", voice="nova", input=reply)
             audio_base64 = base64.b64encode(tts_res.content).decode("utf-8")
         except Exception as e:
             print("TTS Error:", e)
@@ -177,7 +252,9 @@ def chat(data: ChatRequest):
             "reply": reply,
             "audio_base64": audio_base64,
             "mood_score": mood_score,
-            "suggested_choices": suggested_choices
+            "suggested_choices": suggested_choices,
+            "activity_hour": activity_hour, # 추론된 시간대 포함
+            "evidence": rag_context # 검색 근거 포함
         }
     except Exception as e:
         import traceback
@@ -210,29 +287,67 @@ async def tts(
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/get_data")
-def get_data():
-    """user_db.json에서 데이터를 로드하여 반환"""
+def get_data(user_id: str = "guest_user"):
+    """JSON 파일(로컬)과 Supabase(클라우드)에서 데이터를 병합하여 로드"""
     db_path = r"d:\hrvdata\service\user_db.json"
+    result = {"hrv_sessions": [], "scheduled_activities": [], "custom_activities": [], "gratitude_entries": []}
+    
+    # 1. 로컬 파일 우선 로드
     try:
         if os.path.exists(db_path):
             with open(db_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        return {"error": "File not found", "path": db_path}
+                result.update(json.load(f))
     except Exception as e:
-        print(f"Error loading data: {e}")
-        return {"error": str(e)}
+        print(f"DEBUG: Local Load Error: {e}")
+
+    # 2. Supabase 연동 시 클라우드 데이터 우선 (더 최신일 가능성 높음)
+    if supabase:
+        try:
+            sess = supabase.table("hrv_sessions").select("*").eq("user_id", user_id).execute()
+            if sess.data: result["hrv_sessions"] = sess.data
+            
+            sched = supabase.table("scheduled_activities").select("*").eq("user_id", user_id).execute()
+            if sched.data: result["scheduled_activities"] = sched.data
+            
+            print("DEBUG: Loaded data from Supabase")
+        except Exception as e:
+            print(f"DEBUG: Supabase Sync Error: {e}")
+
+    return result
 
 @app.post("/api/save_data")
 def save_data(request: SaveDataRequest):
-    """user_db.json에 데이터를 저장"""
+    """JSON 파일(로컬) 저장 및 Supabase 클라우드 동기화"""
     db_path = r"d:\hrvdata\service\user_db.json"
+    user_id = "guest_user" # 우선 고정
+    
+    # 1. 로컬 파일 저장
     try:
         with open(db_path, "w", encoding="utf-8") as f:
             json.dump(request.data, f, ensure_ascii=False, indent=2)
-        return {"status": "success"}
     except Exception as e:
-        print(f"Error saving data: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"DEBUG: Local Save Error: {e}")
+
+    # 2. Supabase 동기화
+    if supabase:
+        try:
+            # hrv_sessions 동기화
+            sessions = request.data.get("hrv_sessions", [])
+            for s in sessions:
+                s["user_id"] = user_id
+                supabase.table("hrv_sessions").upsert(s).execute()
+            
+            # scheduled_activities 동기화
+            scheduled = request.data.get("scheduled_activities", [])
+            for s in scheduled:
+                s["user_id"] = user_id
+                supabase.table("scheduled_activities").upsert(s).execute()
+                
+            print("DEBUG: Synchronized with Supabase")
+        except Exception as e:
+            print(f"DEBUG: Supabase Sync Error: {e}")
+
+    return {"status": "success"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -59,7 +59,7 @@ export default function VoiceSetupPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto relative overflow-hidden p-6 font-sans">
+    <main className="min-h-screen bg-white flex flex-col max-w-md mx-auto relative overflow-hidden p-6 font-sans">
       <header className="flex justify-between items-center mb-8 relative z-10 pt-4">
         <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all">
           <ChevronLeft size={32} className="text-gray-900" strokeWidth={3} />
@@ -78,22 +78,19 @@ export default function VoiceSetupPage() {
             exit={{ opacity: 0, x: -20 }}
             className="flex-1 flex flex-col justify-center"
           >
-            <div className="text-center space-y-4 mb-12">
-              <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-6">
-                <Sparkles className="w-10 h-10 text-primary" />
-              </div>
-              <h1 className="text-2xl font-black text-gray-900 leading-snug">
+            <div className="text-center space-y-4 mb-20">
+              <h1 className="text-3xl font-black text-gray-900 leading-snug">
                 지금부터 마음 건강을 <br /> 확인하겠습니다.
               </h1>
-              <p className="text-gray-500 font-bold">음성 지원이 필요하십니까?</p>
+              <p className="text-gray-500 font-bold text-xl">음성 지원이 필요하십니까?</p>
             </div>
 
             <div className="space-y-4">
               <button 
                 onClick={() => setUseVoice(true)}
-                className={`w-full p-6 rounded-[32px] border-2 transition-all flex items-center gap-4 ${useVoice === true ? 'bg-primary border-primary shadow-xl shadow-primary/20 text-white' : 'bg-white border-gray-100 text-gray-800'}`}
+                className={`w-full p-6 rounded-[32px] border-2 transition-all flex items-center gap-4 ${useVoice === true ? 'bg-yellow-100 border-yellow-200 shadow-xl shadow-yellow-200/20 text-gray-900' : 'bg-white border-gray-100 text-gray-800'}`}
               >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${useVoice === true ? 'bg-white/20' : 'bg-gray-100 text-gray-400'}`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${useVoice === true ? 'bg-white/60' : 'bg-gray-100 text-gray-400'}`}>
                   <Volume2 />
                 </div>
                 <span className="text-xl font-black">예, 필요합니다</span>
@@ -101,9 +98,9 @@ export default function VoiceSetupPage() {
 
               <button 
                 onClick={() => setUseVoice(false)}
-                className={`w-full p-6 rounded-[32px] border-2 transition-all flex items-center gap-4 ${useVoice === false ? 'bg-gray-900 border-gray-900 shadow-xl text-white' : 'bg-white border-gray-100 text-gray-800'}`}
+                className={`w-full p-6 rounded-[32px] border-2 transition-all flex items-center gap-4 ${useVoice === false ? 'bg-yellow-100 border-yellow-200 shadow-xl shadow-yellow-200/20 text-gray-900' : 'bg-white border-gray-100 text-gray-800'}`}
               >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${useVoice === false ? 'bg-white/20' : 'bg-gray-100 text-gray-400'}`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${useVoice === false ? 'bg-white/60' : 'bg-gray-100 text-gray-400'}`}>
                   <VolumeX />
                 </div>
                 <span className="text-xl font-black">아니오, 괜찮습니다</span>
@@ -133,9 +130,9 @@ export default function VoiceSetupPage() {
                   setVoice('nova');
                   playPreview('nova');
                 }}
-                className={`p-8 rounded-[48px] border-2 transition-all flex flex-col items-center gap-6 ${voice === 'nova' ? 'border-primary bg-primary/20 shadow-xl z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
+                className={`p-8 rounded-[48px] border-4 transition-all flex flex-col items-center gap-6 ${voice === 'nova' ? 'border-yellow-200 bg-yellow-50 shadow-xl z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
               >
-                <div className={`w-20 h-20 rounded-[32px] flex items-center justify-center transition-all ${voice === 'nova' ? 'bg-primary text-gray-900 shadow-lg' : 'bg-gray-100'}`}>
+                <div className={`w-20 h-20 rounded-[32px] flex items-center justify-center transition-all ${voice === 'nova' ? 'bg-yellow-200 text-gray-900 shadow-lg' : 'bg-gray-100'}`}>
                   <UserRound size={40} />
                 </div>
                 <div className="text-center">
@@ -149,9 +146,9 @@ export default function VoiceSetupPage() {
                   setVoice('onyx');
                   playPreview('onyx');
                 }}
-                className={`p-8 rounded-[48px] border-2 transition-all flex flex-col items-center gap-6 ${voice === 'onyx' ? 'border-primary bg-primary/20 shadow-xl z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
+                className={`p-8 rounded-[48px] border-4 transition-all flex flex-col items-center gap-6 ${voice === 'onyx' ? 'border-yellow-200 bg-yellow-50 shadow-xl z-10 scale-105' : 'border-gray-100 bg-white text-gray-400'}`}
               >
-                <div className={`w-20 h-20 rounded-[32px] flex items-center justify-center transition-all ${voice === 'onyx' ? 'bg-primary text-gray-900 shadow-lg' : 'bg-gray-100'}`}>
+                <div className={`w-20 h-20 rounded-[32px] flex items-center justify-center transition-all ${voice === 'onyx' ? 'bg-yellow-200 text-gray-900 shadow-lg' : 'bg-gray-100'}`}>
                   <User size={40} />
                 </div>
                 <div className="text-center">
@@ -169,7 +166,7 @@ export default function VoiceSetupPage() {
           whileTap={{ scale: 0.98 }}
           onClick={handleNext}
           disabled={useVoice === null}
-          className={`w-full py-6 rounded-[32px] text-xl font-black flex justify-center gap-2 transition-all ${useVoice !== null ? 'bg-primary text-white shadow-premium' : 'bg-gray-200 text-gray-400'}`}
+          className={`w-full py-6 rounded-[32px] text-xl font-black flex justify-center gap-2 transition-all ${useVoice !== null ? 'bg-yellow-200 shadow-sm text-gray-900' : 'bg-gray-100 text-gray-400'}`}
         >
           {step === 1 ? '선택 완료' : '설문 시작하기'}
         </motion.button>

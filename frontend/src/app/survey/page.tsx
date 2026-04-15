@@ -172,94 +172,93 @@ export default function SurveyPage() {
   const progress = ((currentIdx + 1) / PHQ9_QUESTIONS.length) * 100;
 
   return (
-    <main className="min-h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-2 font-sans overflow-hidden">
-      <header className="flex justify-between items-center py-4 px-3 sticky top-0 bg-white z-20">
-        <button onClick={() => router.back()} className="flex items-center justify-center w-12 h-12 bg-transparent active:scale-95 transition-all outline-none">
-          <ChevronLeft size={32} className="text-gray-900" strokeWidth={3} />
+    <main className="h-screen bg-white text-gray-900 max-w-md mx-auto flex flex-col p-2 font-sans overflow-hidden">
+      <header className="flex justify-between items-center py-2 px-3 sticky top-0 bg-white z-20 border-b border-gray-50">
+        <button onClick={() => router.back()} className="flex items-center justify-center w-8 h-8 bg-transparent active:scale-95 transition-all outline-none">
+          <ChevronLeft size={24} className="text-gray-900" strokeWidth={3} />
         </button>
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">설문</h1>
+        <h1 className="text-xl font-black text-gray-900 tracking-tight">설문</h1>
         <button 
            onClick={() => {
              const newState = !isVoiceEnabled;
              setIsVoiceEnabled(newState);
              if (!newState) stopAudio();
            }}
-           className={`p-4 rounded-[28px] transition-all duration-300 shadow-xl ${isVoiceEnabled ? 'bg-primary text-gray-900 scale-105 shadow-primary/30' : 'bg-gray-100 text-gray-400'}`}
+           className={`p-2 rounded-full transition-all duration-300 ${isVoiceEnabled ? 'bg-yellow-200 text-gray-900 scale-105' : 'bg-gray-100 text-gray-400'}`}
         >
-          {isVoiceEnabled ? <Volume2 size={42} /> : <VolumeX size={42} />}
+          {isVoiceEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
         </button>
       </header>
 
-      <div className="px-3 mb-2">
-        <div className="p-3 bg-gray-50 rounded-[28px] shadow-inner">
-          <Progress.Root className="relative overflow-hidden bg-white rounded-full w-full h-8 border-4 border-white shadow-sm">
+      <div className="px-3 mt-2 mb-2">
+        <div className="p-1 bg-gray-50/50 rounded-full">
+          <Progress.Root className="relative overflow-hidden bg-white rounded-full w-full h-3 border-2 border-white shadow-sm">
             <Progress.Indicator
-              className="bg-primary w-full h-full transition-transform duration-700 ease-out shadow-[0_0_15px_rgba(255,232,31,0.5)]"
+              className="bg-yellow-200 w-full h-full transition-transform duration-700 ease-out"
               style={{ transform: `translateX(-${100 - progress}%)` }}
             />
           </Progress.Root>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col px-3 overflow-y-auto pb-4">
+      <div className="flex-1 flex flex-col px-3 overflow-y-auto pb-2 scrollbar-hide">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIdx}
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.1 }}
-            className="flex-shrink-0 p-8 flex flex-col items-center justify-center text-center mb-8 bg-primary rounded-[60px] shadow-2xl border-[10px] border-white min-h-[45vh] relative overflow-hidden"
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="flex-shrink-0 p-6 flex flex-col items-center justify-center text-center mb-4 bg-yellow-50 rounded-[40px] shadow-sm border-[2px] border-yellow-100 min-h-[30vh] relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
-            <span className="absolute top-8 left-8 bg-gray-900 text-white px-6 py-2 rounded-full text-xl font-black">
+            <span className="absolute top-6 left-6 bg-gray-900/10 text-gray-900 px-4 py-1 rounded-full text-xs font-black">
               Q{currentIdx + 1}
             </span>
-            <h3 className="text-[2.75rem] font-extrabold leading-[1.25] text-gray-900 break-keep drop-shadow-sm">
+            <h3 className="text-2xl font-black leading-[1.2] text-gray-900 break-keep">
               {PHQ9_QUESTIONS[currentIdx]}
             </h3>
           </motion.div>
         </AnimatePresence>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {OPTIONS.map((opt, idx) => (
             <motion.button
               key={idx}
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setSelected(opt.score)}
-              className={`w-full p-8 text-left rounded-[45px] border-4 transition-all flex items-center gap-6 group shadow-lg ${selected === opt.score
-                  ? 'bg-gray-900 border-gray-900 shadow-gray-900/20'
+              className={`w-full p-5 text-left rounded-[28px] border-2 transition-all flex items-center gap-4 group shadow-sm ${selected === opt.score
+                  ? 'bg-yellow-100 border-yellow-200'
                   : 'bg-white border-gray-100'
                 }`}
             >
               <div className="flex-1">
-                <span className={`text-[1.75rem] font-black leading-tight block ${selected === opt.score ? 'text-white' : 'text-gray-900'}`}>
+                <span className={`text-base font-bold leading-tight block text-gray-900`}>
                   {opt.label}
                 </span>
               </div>
 
-              <div className={`w-16 h-16 rounded-full border-4 flex items-center justify-center transition-all ${selected === opt.score
-                  ? 'bg-primary border-primary shadow-[0_0_20px_rgba(255,232,31,0.4)]'
+              <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${selected === opt.score
+                  ? 'bg-yellow-400 border-yellow-400 text-gray-900'
                   : 'bg-gray-50 border-gray-100'
                 }`}>
-                {selected === opt.score && <CheckCircle2 size={40} className="text-gray-900" />}
+                {selected === opt.score && <CheckCircle2 size={24} />}
               </div>
             </motion.button>
           ))}
         </div>
       </div>
 
-      <footer className="mt-4 pb-10 px-3">
+      <footer className="mt-2 pb-6 px-3">
         <button
           onClick={handleNext}
           disabled={selected === null}
-          className={`w-full py-9 flex items-center justify-center gap-4 rounded-[45px] text-4xl font-black transition-all shadow-2xl active:scale-95 ${
+          className={`w-full py-5 flex items-center justify-center gap-3 rounded-[28px] text-xl font-black transition-all active:scale-95 ${
             selected !== null 
-              ? 'bg-primary text-gray-900 opacity-100 shadow-primary/30'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+              ? 'bg-yellow-200 text-gray-900 shadow-sm'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
         >
           <span>{currentIdx < 8 ? '다음 질문' : (flowType === '2' ? '측정 시작' : '결과 보기')}</span>
-          <ChevronRight size={48} />
+          <ChevronRight size={24} />
         </button>
       </footer>
     </main>

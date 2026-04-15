@@ -12,56 +12,117 @@
 
 :root {
   --background: #FFFFFF;
-  --foreground: #000000;
-  --primary: #FDF2C2;
-  --primary-dark: #FBE6A0;
-  --secondary: #FFFBEB;
-  --accent: #1A1A1A;
+  --foreground: #1A1A1A;
+  --primary: #FFFBEB; /* 표준 연노란색 (눈이 편안한 단일 톤) */
+  --primary-dark: #FDE68A; 
+  --accent: #FFBB00; /* 포인트가 필요한 곳에만 사용 */
+}
+
+@media (max-width: 480px) {
+  :root { font-size: 14px; }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #111827;
+  --primary: #FEF9C3;
+  --primary-dark: #FACC15;
+}
+
+html {
+  font-size: 16px; /* 모든 rem의 기준 */
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  background: #F8F9FA;
+  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
-/* Common Mobile Container Scaling */
-main, .mobile-container {
-  max-width: 540px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  min-height: 100vh;
-  box-shadow: 0 0 50px rgba(0,0,0,0.05);
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* 브라우저 자체 스크롤 금지 */
+  background-color: #E2E8F0; /* 외부 배경: 진한 그레이 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-noto-sans-kr);
+}
+
+/* 
+   안드로이드 하드웨어 시뮬레이터 레이아웃:
+   PC 브라우저에서도 실제 안드로이드 폰(9:19)을 들고 있는 듯한 비율 강제
+*/
+main {
+  width: 400px; /* 가로도 살짝 더 슬림하게 */
+  height: 780px; /* 세로 길이를 현실적인 안드로이드 비율로 압축 */
+  background-color: #FFFFFF;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.4);
+  border-radius: 44px;
+  border: 4px solid #1A1A1A; /* 사용자 요청: 베젤 두께를 얇게 보정 */
+  margin: auto;
+  user-select: none;
+}
+
+/* 가변 이미지/아이콘 대응 */
+img, svg {
+  max-width: 100%;
+  height: auto;
 }
 
 .card {
-  @apply bg-white rounded-[40px] p-8 shadow-md border border-gray-100;
+  @apply bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-sm border border-gray-100 transition-all;
 }
 
 .btn-primary {
-  @apply bg-primary text-white rounded-full py-4 px-8 font-semibold flex items-center justify-center gap-2 transform transition-all active:scale-95 text-lg;
-  &:hover {
-    opacity: 0.9;
-  }
+  @apply bg-primary text-gray-900 rounded-full py-4 px-8 font-black flex items-center justify-center gap-2 transform transition-all active:scale-95 text-lg shadow-lg;
 }
 
-.btn-secondary {
-  @apply bg-white text-primary border border-gray-100 rounded-full py-3 px-6 font-medium bg-white;
+/* 터치 영역 최적화 (모바일) */
+button, a {
+  min-height: 2.75rem;
+  touch-action: manipulation;
 }
 
-/* Animations from the design */
+/* 애니메이션 및 유틸리티 */
 .pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+  50% { opacity: 0.8; transform: scale(1.02); }
 }
 
-.gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+/* 스크린 리더 및 가독성 보조 */
+.break-keep {
+  word-break: keep-all;
+}
+
+/* 수평 스크롤바 숨기기 */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
